@@ -62,7 +62,6 @@
   }
   .mode-row .chip{font-size:11px;padding:6px 12px;background:transparent;border-color:rgba(255,255,255,.1)}
   .mode-switches{display:flex;gap:5px;margin-left:auto}
-  .mode-switches .chip{font-size:9.5px;padding:6px 7px}
   .status-metric{display:flex;align-items:baseline;gap:5px;color:#9FB0C4;font-size:11px;letter-spacing:.06em}
   .status-metric b{color:var(--kin);font-size:30px;line-height:1;font-weight:750;font-variant-numeric:tabular-nums}
   .status-metric.moves b{color:var(--washi);font-size:30px}
@@ -86,16 +85,25 @@
   .clear-actions .chip{grid-column:2}
   .clear-actions .chip[hidden]{display:none}
   .clear-actions .tip-button{grid-column:1;justify-self:start}
+  .clear-actions .maker-link{grid-column:2;justify-self:center}
   .clear-actions .progress-reset{grid-column:3;justify-self:end}
-  .tip-button,.progress-reset{
+  .tip-button,.maker-link,.progress-reset{
     padding:5px 4px;border:0;background:none;color:#718297;
     font:inherit;font-size:11px;text-decoration:underline;text-underline-offset:3px;
     cursor:pointer;transition:color .18s;
   }
-  .tip-button:hover,.progress-reset:hover{color:#A8B6C7}
-  .tip-button:focus-visible,.progress-reset:focus-visible{
+  .tip-button:hover,.maker-link:hover,.progress-reset:hover{color:#A8B6C7}
+  .tip-button:focus-visible,.maker-link:focus-visible,.progress-reset:focus-visible{
     outline:2px solid var(--washi);outline-offset:3px;border-radius:3px
   }
+  .maker-link.ready{
+    padding:9px 16px;border-radius:999px;background:var(--kin);color:var(--ai);
+    font-weight:600;text-decoration:none;
+  }
+  .maker-link.ready:disabled{
+    background:rgba(255,255,255,.08);color:#65768A;cursor:default;opacity:.72;
+  }
+  .maker-link[hidden]{display:none}
 
   .board-wrap{position:relative;width:100%;max-width:372px;margin-top:14px}
   #board{
@@ -192,7 +200,6 @@
   <span class="status-separator">/</span>
   <div class="status-metric moves"><span>手数</span><b id="moves">0</b></div>
   <div class="mode-switches">
-    <button class="chip" id="customMode">盤面を作る</button>
     <button class="chip" id="freeMode">フリーモード</button>
   </div>
 </div>
@@ -217,6 +224,7 @@
 <p class="msg" id="msg"></p>
 <div class="clear-actions" id="clearActions">
   <button class="tip-button" id="showTip">攻略のコツ</button>
+  <button class="maker-link" id="customMode">盤面を作る</button>
   <button class="chip on" id="clearNext" hidden>次の問題へ →</button>
   <button class="progress-reset" id="resetProgress">進行状況をリセット</button>
 </div>
@@ -546,6 +554,7 @@ function setPosition(state,par){
   busy=false; drag=null; svg.classList.remove('spinning','selecting','celebrating');
   baseTiles.forEach(el=>el.classList.remove('selected'));
   svg.querySelectorAll('.pivot.active').forEach(el=>el.classList.remove('active'));
+  $('msg').textContent='';
   $('msg').classList.remove('show','tip','long-tip');
   $('clearNext').hidden=true;
   paint();
@@ -591,6 +600,7 @@ function restoreFreeSession(){
   busy=false;drag=null;svg.classList.remove('spinning','selecting','celebrating');
   baseTiles.forEach(el=>el.classList.remove('selected'));
   svg.querySelectorAll('.pivot.active').forEach(el=>el.classList.remove('active'));
+  $('msg').textContent='';
   $('msg').classList.remove('show','tip','long-tip');
   $('clearNext').hidden=!clearShown;
   if(clearShown)$('clearNext').textContent='もう一問';
@@ -869,6 +879,8 @@ function renderStageNav(){
   $('nextStage').disabled=freeMode||customMode||stageIndex===STAGES.length-1;
   $('freeMode').textContent=freeMode||customMode?'ステージへ戻る':'フリーモード';
   $('customMode').textContent=editingBoard?'この盤面で遊ぶ':'盤面を作る';
+  $('customMode').classList.toggle('ready',editingBoard);
+  $('customMode').hidden=!$('clearNext').hidden;
   $('customMode').disabled=false;
   if(freeMode){
     $('stageKind').textContent='FREE PLAY';
@@ -923,6 +935,7 @@ function showClearActions(){
   else if(customMode) action.textContent='もう一度';
   else if(stageIndex===STAGES.length-1) action.textContent='フリーモードへ →';
   else action.textContent='次の問題へ →';
+  $('customMode').hidden=true;
   action.hidden=false;
 }
 $('prevStage').addEventListener('click',()=>loadStage(stageIndex-1));
