@@ -84,14 +84,17 @@
   }
   .clear-actions .chip{grid-column:2}
   .clear-actions .chip[hidden]{display:none}
+  .clear-actions .tip-button{grid-column:1;justify-self:start}
   .clear-actions .progress-reset{grid-column:3;justify-self:end}
-  .progress-reset{
+  .tip-button,.progress-reset{
     padding:5px 4px;border:0;background:none;color:#718297;
     font:inherit;font-size:11px;text-decoration:underline;text-underline-offset:3px;
     cursor:pointer;transition:color .18s;
   }
-  .progress-reset:hover{color:#A8B6C7}
-  .progress-reset:focus-visible{outline:2px solid var(--washi);outline-offset:3px;border-radius:3px}
+  .tip-button:hover,.progress-reset:hover{color:#A8B6C7}
+  .tip-button:focus-visible,.progress-reset:focus-visible{
+    outline:2px solid var(--washi);outline-offset:3px;border-radius:3px
+  }
 
   #board{
     width:100%;max-width:372px;height:auto;display:block;margin:14px 0 0;
@@ -138,6 +141,10 @@
   }
   .msg{min-height:28px;margin-top:10px;font-size:16px;font-family:"Hiragino Mincho ProN",serif;color:var(--kin);opacity:0;transition:opacity .35s ease;text-align:center}
   .msg.show{opacity:1}
+  .msg.tip{
+    width:100%;max-width:372px;font-family:inherit;font-size:clamp(9.5px,2.8vw,11.5px);
+    color:#A8B6C7;white-space:nowrap;
+  }
   .foot{margin-top:18px;font-size:12.5px;color:#7E8FA3;max-width:30em;text-align:center;line-height:1.9}
   @media (prefers-reduced-motion:reduce){
     .tile,.pivot{transition:none}
@@ -183,6 +190,7 @@
 
 <p class="msg" id="msg"></p>
 <div class="clear-actions" id="clearActions">
+  <button class="tip-button" id="showTip">攻略のコツ</button>
   <button class="chip on" id="clearNext" hidden>次の問題へ →</button>
   <button class="progress-reset" id="resetProgress">進行状況をリセット</button>
 </div>
@@ -311,8 +319,9 @@ const STAGES=[
 const svg=document.getElementById('board'), $=id=>document.getElementById(id);
 let ori=new Uint8Array(N), spin=new Int16Array(N), history=[], moves=0, best=0;
 let tileEls=[], baseTiles=[], drag=null, busy=false;
-let stageIndex=0, freeMode=false, clearShown=false, clearTimer=0, hintInfoTimer=0;
+let stageIndex=0, freeMode=false, clearShown=false, clearTimer=0, hintInfoTimer=0, tipTimer=0;
 let currentInitialState=0, currentInitialPar=0;
+let lastTipIndex=-1;
 let clearedStages=new Set();
 try{clearedStages=new Set(JSON.parse(localStorage.getItem('wake7-cleared')||'[]'));}catch(_){}
 const mod3=v=>((v%3)+3)%3;
@@ -372,6 +381,8 @@ function paint(){
       renderProgress();
     }
     const m=$('msg');
+    clearTimeout(tipTimer);
+    m.classList.remove('tip');
     m.textContent = moves===best ? '最短で全員起きました。お見事。' : '全員起きました。';
     m.classList.add('show');
     clearTimeout(clearTimer);
@@ -417,7 +428,7 @@ function setPosition(state,par){
   cancelTileAnimations();
   clearHintVisuals();
   svg.querySelectorAll('.clear-burst').forEach(el=>el.remove());
-  clearTimeout(clearTimer); clearTimeout(hintInfoTimer);
+  clearTimeout(clearTimer); clearTimeout(hintInfoTimer); clearTimeout(tipTimer);
   currentInitialState=state; currentInitialPar=par;
   ori=dec(state);
   spin=Int16Array.from(ori);
@@ -426,7 +437,7 @@ function setPosition(state,par){
   busy=false; drag=null; svg.classList.remove('spinning','selecting','celebrating');
   baseTiles.forEach(el=>el.classList.remove('selected'));
   svg.querySelectorAll('.pivot.active').forEach(el=>el.classList.remove('active'));
-  $('msg').classList.remove('show');
+  $('msg').classList.remove('show','tip');
   $('clearNext').hidden=true;
   paint();
 }
@@ -711,6 +722,25 @@ $('clearNext').addEventListener('click',()=>{
   if(freeMode) startFree();
   else if(stageIndex===STAGES.length-1) startFree();
   else loadStage(stageIndex+1);
+});
+const PLAY_TIPS=[
+  '4体立ち：小三角は最短1手、大三角は最短4手、ほかは最短3手',
+  '5体立ちで中央が寝ていれば、向きに関係なく最短2手',
+  '5体立ちで寝た2体が外周で離れていれば最短3手',
+  '4体寝のひし形：対角が同じ向きなら最短3手、違えば最短2手',
+  '中央だけが立っている形は、向きに関係なく最短4手',
+  '外周を1つおきに3体立っている形は最短3手'
+];
+$('showTip').addEventListener('click',()=>{
+  if(busy||isSolved()) return;
+  let i=(Math.random()*PLAY_TIPS.length)|0;
+  if(PLAY_TIPS.length>1)while(i===lastTipIndex)i=(Math.random()*PLAY_TIPS.length)|0;
+  lastTipIndex=i;
+  const m=$('msg');
+  clearTimeout(tipTimer);
+  m.textContent=PLAY_TIPS[i];
+  m.classList.add('tip','show');
+  tipTimer=setTimeout(()=>m.classList.remove('show'),5000);
 });
 $('resetProgress').addEventListener('click',()=>{
   if(!confirm('すべてのクリア記録をリセットしますか？')) return;
