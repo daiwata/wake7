@@ -58,10 +58,11 @@
   }
   .progress button:focus-visible{outline:2px solid var(--washi);outline-offset:3px}
   .mode-row{
-    width:100%;max-width:372px;display:flex;align-items:center;gap:18px;margin-top:10px
+    width:100%;max-width:372px;display:flex;align-items:center;gap:8px;margin-top:10px
   }
   .mode-row .chip{font-size:11px;padding:6px 12px;background:transparent;border-color:rgba(255,255,255,.1)}
-  .mode-row .chip{margin-left:auto}
+  .mode-switches{display:flex;gap:5px;margin-left:auto}
+  .mode-switches .chip{font-size:9.5px;padding:6px 7px}
   .status-metric{display:flex;align-items:baseline;gap:5px;color:#9FB0C4;font-size:11px;letter-spacing:.06em}
   .status-metric b{color:var(--kin);font-size:30px;line-height:1;font-weight:750;font-variant-numeric:tabular-nums}
   .status-metric.moves b{color:var(--washi);font-size:30px}
@@ -96,10 +97,22 @@
     outline:2px solid var(--washi);outline-offset:3px;border-radius:3px
   }
 
+  .board-wrap{position:relative;width:100%;max-width:372px;margin-top:14px}
   #board{
-    width:100%;max-width:372px;height:auto;display:block;margin:14px 0 0;
+    width:100%;height:auto;display:block;margin:0;
     touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none;overflow:visible;
   }
+  .board-view-controls{
+    position:absolute;z-index:2;top:3px;left:4px;right:4px;
+    display:flex;justify-content:space-between;pointer-events:none;
+  }
+  .view-button{
+    pointer-events:auto;padding:5px 4px;border:0;background:rgba(22,40,60,.72);
+    color:#718297;font:inherit;font-size:10px;border-radius:4px;cursor:pointer;
+    transition:color .18s,background .18s;
+  }
+  .view-button:hover{color:#A8B6C7;background:rgba(22,40,60,.9)}
+  .view-button:focus-visible{outline:2px solid var(--washi);outline-offset:2px}
   #board.spinning{cursor:grabbing}
   .tile{
     transform-box:view-box;transform-origin:0 0;will-change:transform;
@@ -142,9 +155,10 @@
   .msg{min-height:28px;margin-top:10px;font-size:16px;font-family:"Hiragino Mincho ProN",serif;color:var(--kin);opacity:0;transition:opacity .35s ease;text-align:center}
   .msg.show{opacity:1}
   .msg.tip{
-    width:100%;max-width:372px;font-family:inherit;font-size:clamp(9.5px,2.8vw,11.5px);
+    width:100%;max-width:372px;font-family:inherit;font-size:clamp(9px,2.8vw,11.5px);
     color:#A8B6C7;white-space:nowrap;
   }
+  .msg.tip.long-tip{font-size:clamp(8.3px,2.45vw,10.5px)}
   .foot{margin-top:18px;font-size:12.5px;color:#7E8FA3;max-width:30em;text-align:center;line-height:1.9}
   @media (prefers-reduced-motion:reduce){
     .tile,.pivot{transition:none}
@@ -152,7 +166,7 @@
   }
   @media (max-width:480px){
     body{padding-left:4px;padding-right:4px}
-    #board{max-width:none}
+    .board-wrap{max-width:none}
     .stage-nav,.progress,.mode-row,.playbar{width:calc(100% - 8px)}
   }
 </style>
@@ -174,7 +188,10 @@
   <div class="status-metric"><span>最短</span><b id="stagePar">1</b><span>手</span></div>
   <span class="status-separator">/</span>
   <div class="status-metric moves"><span>手数</span><b id="moves">0</b></div>
-  <button class="chip" id="freeMode">フリーモード</button>
+  <div class="mode-switches">
+    <button class="chip" id="customMode">盤面を作る</button>
+    <button class="chip" id="freeMode">フリーモード</button>
+  </div>
 </div>
 <div class="playbar">
   <div class="play-actions">
@@ -186,7 +203,13 @@
   </div>
 </div>
 
-<svg id="board" viewBox="14 0 293 310" aria-label="七枚のだるま盤"></svg>
+<div class="board-wrap">
+  <div class="board-view-controls">
+    <button class="view-button" id="mirrorBoard">左右反転</button>
+    <button class="view-button" id="rotateBoard">60°回転</button>
+  </div>
+  <svg id="board" viewBox="14 0 293 310" aria-label="七枚のだるま盤"></svg>
+</div>
 
 <p class="msg" id="msg"></p>
 <div class="clear-actions" id="clearActions">
@@ -245,6 +268,22 @@ const TRI=(()=>{
     }
   return out;
 })();
+function makeBoardPermutation(angleDeg=0,mirror=false){
+  const center=CELL[3], q=angleDeg*Math.PI/180, co=Math.cos(q), si=Math.sin(q);
+  return CELL.map(p=>{
+    let x=p.x-center.x,y=p.y-center.y;
+    if(mirror)x=-x;
+    const tx=center.x+x*co-y*si,ty=center.y+x*si+y*co;
+    let bestIndex=0,bestDistance=Infinity;
+    CELL.forEach((target,i)=>{
+      const d=Math.hypot(tx-target.x,ty-target.y);
+      if(d<bestDistance){bestDistance=d;bestIndex=i;}
+    });
+    return bestIndex;
+  });
+}
+const VIEW_ROTATE_60=makeBoardPermutation(60);
+const VIEW_MIRROR=makeBoardPermutation(0,true);
 
 /* ---- 全探索ソルバ（向き3値・7マス = 3進7桁） ---- */
 const P3=[1,3,9,27,81,243,729], NS=2187;
@@ -320,6 +359,7 @@ const svg=document.getElementById('board'), $=id=>document.getElementById(id);
 let ori=new Uint8Array(N), spin=new Int16Array(N), history=[], moves=0, best=0;
 let tileEls=[], baseTiles=[], drag=null, busy=false;
 let stageIndex=0, freeMode=false, clearShown=false, clearTimer=0, hintInfoTimer=0;
+let customMode=false,editingBoard=false;
 let currentInitialState=0, currentInitialPar=0;
 let lastTipIndex=-1;
 let savedFreeSession=null;
@@ -374,15 +414,15 @@ function paint(){
     tileEls[i].style.transform='translate('+CELL[i].x.toFixed(2)+'px,'+CELL[i].y.toFixed(2)+'px) rotate('+(spin[i]*120)+'deg)';
   }
   showMoves(moves);
-  if(isSolved()&&!clearShown){
+  if(!editingBoard&&isSolved()&&!clearShown){
     clearShown=true;
-    if(!freeMode){
+    if(!freeMode&&!customMode){
       clearedStages.add(stageIndex);
       try{localStorage.setItem('wake7-cleared',JSON.stringify([...clearedStages]));}catch(_){}
       renderProgress();
     }
     const m=$('msg');
-    m.classList.remove('tip');
+    m.classList.remove('tip','long-tip');
     m.textContent = moves===best ? '最短で全員起きました。お見事。' : '全員起きました。';
     m.classList.add('show');
     clearTimeout(clearTimer);
@@ -397,6 +437,72 @@ function tileTransformDeg(x,y,deg){
 }
 function snapshot(){
   return {o:Uint8Array.from(ori),s:Int16Array.from(spin),t:tileEls.slice(),m:moves};
+}
+function transformPosition(o,s,t,permutation,flip){
+  const nextOri=new Uint8Array(N),nextSpin=new Int16Array(N),nextTiles=Array(N);
+  for(let from=0;from<N;from++){
+    const to=permutation[from];
+    nextOri[to]=flip?mod3(-o[from]):o[from];
+    nextSpin[to]=flip?-s[from]:s[from];
+    nextTiles[to]=t[from];
+  }
+  return {o:nextOri,s:nextSpin,t:nextTiles};
+}
+function transformStateCode(state,permutation,flip){
+  const a=dec(state),next=new Uint8Array(N);
+  for(let from=0;from<N;from++){
+    next[permutation[from]]=flip?mod3(-a[from]):a[from];
+  }
+  return enc(next);
+}
+function rotatePointAroundBoard(p,angleDeg){
+  const center=CELL[3],q=angleDeg*Math.PI/180,co=Math.cos(q),si=Math.sin(q);
+  const x=p.x-center.x,y=p.y-center.y;
+  return {x:center.x+x*co-y*si,y:center.y+x*si+y*co};
+}
+function reorientBoard(permutation,flip=false,rotationDeg=0){
+  if(busy||drag)return;
+  cancelTileAnimations();
+  clearHintVisuals();
+  const before=new Map(tileEls.map((el,i)=>[el,{cell:i,spin:spin[i]}]));
+  const transformed=transformPosition(ori,spin,tileEls,permutation,flip);
+  ori=transformed.o;spin=transformed.s;tileEls=transformed.t;
+  history=history.map(h=>{
+    const next=transformPosition(h.o,h.s,h.t,permutation,flip);
+    return {o:next.o,s:next.s,t:next.t,m:h.m};
+  });
+  currentInitialState=transformStateCode(currentInitialState,permutation,flip);
+  paint();
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  busy=true;
+  let remaining=baseTiles.length;
+  const finished=new Set();
+  for(const el of baseTiles){
+    const old=before.get(el),to=tileEls.indexOf(el),finalTransform=el.style.transform;
+    let frames;
+    if(rotationDeg){
+      const middle=rotatePointAroundBoard(CELL[old.cell],rotationDeg/2);
+      frames=[
+        {transform:tileTransform(CELL[old.cell].x,CELL[old.cell].y,old.spin)},
+        {transform:tileTransform(middle.x,middle.y,old.spin),offset:.5},
+        {transform:finalTransform}
+      ];
+    }else{
+      frames=[
+        {transform:tileTransform(CELL[old.cell].x,CELL[old.cell].y,old.spin)},
+        {transform:finalTransform}
+      ];
+    }
+    const animation=el.animate(frames,{
+      duration:680,easing:'cubic-bezier(.2,.72,.2,1)'
+    });
+    const done=()=>{
+      if(finished.has(el))return;
+      finished.add(el);
+      if(--remaining===0){busy=false;paint();}
+    };
+    animation.onfinish=done;animation.oncancel=done;
+  }
 }
 function cancelTileAnimations(){
   for(const el of baseTiles) for(const a of el.getAnimations()) a.cancel();
@@ -437,12 +543,12 @@ function setPosition(state,par){
   busy=false; drag=null; svg.classList.remove('spinning','selecting','celebrating');
   baseTiles.forEach(el=>el.classList.remove('selected'));
   svg.querySelectorAll('.pivot.active').forEach(el=>el.classList.remove('active'));
-  $('msg').classList.remove('show','tip');
+  $('msg').classList.remove('show','tip','long-tip');
   $('clearNext').hidden=true;
   paint();
 }
 function loadStage(index){
-  freeMode=false;
+  freeMode=false;customMode=false;editingBoard=false;
   stageIndex=Math.max(0,Math.min(STAGES.length-1,index));
   const stage=STAGES[stageIndex];
   setPosition(stage.state,stage.par);
@@ -450,7 +556,7 @@ function loadStage(index){
 }
 function startFree(){
   savedFreeSession=null;
-  freeMode=true;
+  freeMode=true;customMode=false;editingBoard=false;
   const pool=SOLVER.byDepth[4];
   let state=pool[(Math.random()*pool.length)|0];
   if(pool.length>1)while(state===currentInitialState)state=pool[(Math.random()*pool.length)|0];
@@ -474,14 +580,15 @@ function restoreFreeSession(){
   clearHintVisuals();
   svg.querySelectorAll('.clear-burst').forEach(el=>el.remove());
   clearTimeout(clearTimer);clearTimeout(hintInfoTimer);
-  freeMode=true;ori=Uint8Array.from(s.ori);spin=Int16Array.from(s.spin);
+  freeMode=true;customMode=false;editingBoard=false;
+  ori=Uint8Array.from(s.ori);spin=Int16Array.from(s.spin);
   tileEls=s.tileEls.slice();moves=s.moves;best=s.best;
   history=s.history.map(cloneHistoryEntry);
   currentInitialState=s.initialState;currentInitialPar=s.initialPar;clearShown=s.clearShown;
   busy=false;drag=null;svg.classList.remove('spinning','selecting','celebrating');
   baseTiles.forEach(el=>el.classList.remove('selected'));
   svg.querySelectorAll('.pivot.active').forEach(el=>el.classList.remove('active'));
-  $('msg').classList.remove('show','tip');
+  $('msg').classList.remove('show','tip','long-tip');
   $('clearNext').hidden=!clearShown;
   if(clearShown)$('clearNext').textContent='もう一問';
   paint();
@@ -490,6 +597,41 @@ function restoreFreeSession(){
 function leaveFreeMode(){
   saveFreeSession();
   loadStage(stageIndex);
+}
+function makerDistance(){
+  return SOLVER.dist[enc(ori)];
+}
+function showMakerMessage(){
+  const d=makerDistance(),m=$('msg');
+  m.classList.remove('long-tip');
+  m.classList.add('tip','show');
+  m.textContent=d===255
+    ?'この配置は解けません。ダルマをタップして向きを変えてください'
+    :'ダルマをタップして向きを変更　現在の最短は'+d+'手';
+  $('stagePar').textContent=d===255?'—':d;
+  $('customMode').disabled=d===255||d===0;
+}
+function enterBoardMaker(){
+  if(busy)return;
+  if(freeMode)saveFreeSession();
+  const state=enc(ori);
+  freeMode=false;customMode=true;editingBoard=true;
+  setPosition(state,SOLVER.dist[state]===255?0:SOLVER.dist[state]);
+  clearShown=true;
+  renderStageNav();
+  showMakerMessage();
+}
+function playCustomBoard(){
+  const state=enc(ori),d=SOLVER.dist[state];
+  if(d===255||d===0)return;
+  editingBoard=false;customMode=true;freeMode=false;
+  setPosition(state,d);
+  renderStageNav();
+}
+function resetMakerBoard(){
+  ori=new Uint8Array(N);spin=new Int16Array(N);tileEls=baseTiles.slice();
+  moves=0;history=[];clearShown=true;
+  paint();renderStageNav();showMakerMessage();
 }
 
 /* ---- ドラッグに追従して自転・公転 ---- */
@@ -517,6 +659,22 @@ function effectiveTurn(turns){
 }
 svg.addEventListener('pointerdown',e=>{
   if(busy||(e.pointerType==='mouse'&&e.button!==0)) return;
+  if(editingBoard){
+    e.preventDefault();
+    const p=toView(e);
+    let cell=0,distance=Infinity;
+    CELL.forEach((c,i)=>{
+      const d=Math.hypot(p.x-c.x,p.y-c.y);
+      if(d<distance){distance=d;cell=i;}
+    });
+    if(distance>R*.92)return;
+    ori[cell]=mod3(ori[cell]+1);
+    spin[cell]=ori[cell];
+    moves=0;history=[];clearShown=true;
+    paint();
+    showMakerMessage();
+    return;
+  }
   if(isSolved()&&clearShown){
     $('msg').classList.remove('show');
     svg.classList.remove('celebrating');
@@ -604,6 +762,7 @@ $('undo').addEventListener('click',()=>{
 });
 $('reset').addEventListener('click',()=>{
   if(busy)return;
+  if(editingBoard){resetMakerBoard();return;}
   setPosition(currentInitialState,currentInitialPar);
   renderStageNav();
 });
@@ -689,9 +848,9 @@ function renderProgress(){
   }
   [...progress.children].forEach((b,i)=>{
     b.classList.toggle('cleared',clearedStages.has(i));
-    b.classList.toggle('current',!freeMode&&i===stageIndex);
-    b.disabled=freeMode;
-    if(!freeMode&&i===stageIndex)b.setAttribute('aria-current','step');
+    b.classList.toggle('current',!freeMode&&!customMode&&i===stageIndex);
+    b.disabled=freeMode||customMode;
+    if(!freeMode&&!customMode&&i===stageIndex)b.setAttribute('aria-current','step');
     else b.removeAttribute('aria-current');
   });
 }
@@ -699,13 +858,25 @@ function renderStageNav(){
   $('stageKind').classList.remove('hint-info');
   $('stageProgress').hidden=false;
   $('shuffle').hidden=!freeMode;
-  $('prevStage').disabled=freeMode||stageIndex===0;
-  $('nextStage').disabled=freeMode||stageIndex===STAGES.length-1;
-  $('freeMode').textContent=freeMode?'ステージへ戻る':'フリーモード';
+  $('undo').hidden=editingBoard;
+  $('shortest').hidden=editingBoard;
+  $('hint').hidden=editingBoard;
+  $('reset').textContent=editingBoard?'全員立つ':'やり直す';
+  $('prevStage').disabled=freeMode||customMode||stageIndex===0;
+  $('nextStage').disabled=freeMode||customMode||stageIndex===STAGES.length-1;
+  $('freeMode').textContent=freeMode||customMode?'ステージへ戻る':'フリーモード';
+  $('customMode').textContent=editingBoard?'この盤面で遊ぶ':'盤面を作る';
+  $('customMode').disabled=false;
   if(freeMode){
     $('stageKind').textContent='FREE PLAY';
     $('stageNumber').textContent='フリーモード';
     $('stagePar').textContent='4';
+  }else if(customMode){
+    $('stageKind').textContent=editingBoard?'BOARD MAKER':'CUSTOM PLAY';
+    $('stageNumber').textContent=editingBoard?'盤面を作る':'自作問題';
+    const d=SOLVER.dist[enc(ori)];
+    $('stagePar').textContent=d===255?'—':d;
+    if(editingBoard)$('customMode').disabled=d===255||d===0;
   }else{
     $('stageKind').textContent=stageIndex<2?'入門':stageIndex<11?'基本':'挑戦';
     $('stageNumber').textContent=(stageIndex+1)+' / '+STAGES.length;
@@ -746,19 +917,31 @@ function showClearActions(){
   celebrateClear();
   const action=$('clearNext');
   if(freeMode) action.textContent='もう一問';
+  else if(customMode) action.textContent='もう一度';
   else if(stageIndex===STAGES.length-1) action.textContent='フリーモードへ →';
   else action.textContent='次の問題へ →';
   action.hidden=false;
 }
 $('prevStage').addEventListener('click',()=>loadStage(stageIndex-1));
 $('nextStage').addEventListener('click',()=>loadStage(stageIndex+1));
+$('mirrorBoard').addEventListener('click',()=>reorientBoard(VIEW_MIRROR,true));
+$('rotateBoard').addEventListener('click',()=>reorientBoard(VIEW_ROTATE_60,false,60));
+$('customMode').addEventListener('click',()=>{
+  if(editingBoard)playCustomBoard();
+  else enterBoardMaker();
+});
 $('freeMode').addEventListener('click',()=>{
   if(busy)return;
   if(freeMode)leaveFreeMode();
+  else if(customMode)loadStage(stageIndex);
   else restoreFreeSession();
 });
 $('clearNext').addEventListener('click',()=>{
   if(freeMode) startFree();
+  else if(customMode){
+    setPosition(currentInitialState,currentInitialPar);
+    renderStageNav();
+  }
   else if(stageIndex===STAGES.length-1) restoreFreeSession();
   else loadStage(stageIndex+1);
 });
@@ -770,7 +953,8 @@ const PLAY_TIPS=[
   '4体寝のひし形：対角が同じ向きなら最短3手、違えば最短2手',
   '4体寝の芋虫：目玉同士、体同士がそれぞれ同じ向きなら最短2手',
   '5体寝の台形：仲間外れの頭が「上辺なら内、横隅なら外」で最短2手',
-  '5体寝のバーベル：外の仲間外れが隣と頭をごっつんこなら最短2手',
+  '5体寝のバーベル：仲間外れが外側で、隣の立ちの10分前＋右転びなら最短2手',
+  '5体寝のバーベル：仲間外れが外側で、隣の立ちの10分後＋左転びなら最短2手',
   '中央だけが立っている形は、向きに関係なく最短4手',
   '外周を1つおきに3体立っている形は最短3手',
   '最短2手は対称な形を除くと9パターン。ステージ3〜11で全種類を網羅'
@@ -782,6 +966,7 @@ $('showTip').addEventListener('click',()=>{
   lastTipIndex=i;
   const m=$('msg');
   m.textContent=PLAY_TIPS[i];
+  m.classList.toggle('long-tip',PLAY_TIPS[i].length>34);
   m.classList.add('tip','show');
 });
 $('resetProgress').addEventListener('click',()=>{
