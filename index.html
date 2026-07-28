@@ -319,9 +319,10 @@ const STAGES=[
 const svg=document.getElementById('board'), $=id=>document.getElementById(id);
 let ori=new Uint8Array(N), spin=new Int16Array(N), history=[], moves=0, best=0;
 let tileEls=[], baseTiles=[], drag=null, busy=false;
-let stageIndex=0, freeMode=false, clearShown=false, clearTimer=0, hintInfoTimer=0, tipTimer=0;
+let stageIndex=0, freeMode=false, clearShown=false, clearTimer=0, hintInfoTimer=0;
 let currentInitialState=0, currentInitialPar=0;
 let lastTipIndex=-1;
+let savedFreeSession=null;
 let clearedStages=new Set();
 try{clearedStages=new Set(JSON.parse(localStorage.getItem('wake7-cleared')||'[]'));}catch(_){}
 const mod3=v=>((v%3)+3)%3;
@@ -381,7 +382,6 @@ function paint(){
       renderProgress();
     }
     const m=$('msg');
-    clearTimeout(tipTimer);
     m.classList.remove('tip');
     m.textContent = moves===best ? '最短で全員起きました。お見事。' : '全員起きました。';
     m.classList.add('show');
@@ -428,7 +428,7 @@ function setPosition(state,par){
   cancelTileAnimations();
   clearHintVisuals();
   svg.querySelectorAll('.clear-burst').forEach(el=>el.remove());
-  clearTimeout(clearTimer); clearTimeout(hintInfoTimer); clearTimeout(tipTimer);
+  clearTimeout(clearTimer); clearTimeout(hintInfoTimer);
   currentInitialState=state; currentInitialPar=par;
   ori=dec(state);
   spin=Int16Array.from(ori);
@@ -449,12 +449,47 @@ function loadStage(index){
   renderStageNav();
 }
 function startFree(){
+  savedFreeSession=null;
   freeMode=true;
   const pool=SOLVER.byDepth[4];
   let state=pool[(Math.random()*pool.length)|0];
   if(pool.length>1)while(state===currentInitialState)state=pool[(Math.random()*pool.length)|0];
   setPosition(state,4);
   renderStageNav();
+}
+function cloneHistoryEntry(h){
+  return {o:Uint8Array.from(h.o),s:Int16Array.from(h.s),t:h.t.slice(),m:h.m};
+}
+function saveFreeSession(){
+  savedFreeSession={
+    ori:Uint8Array.from(ori),spin:Int16Array.from(spin),tileEls:tileEls.slice(),
+    moves,best,history:history.map(cloneHistoryEntry),
+    initialState:currentInitialState,initialPar:currentInitialPar,clearShown
+  };
+}
+function restoreFreeSession(){
+  const s=savedFreeSession;
+  if(!s){startFree();return;}
+  cancelTileAnimations();
+  clearHintVisuals();
+  svg.querySelectorAll('.clear-burst').forEach(el=>el.remove());
+  clearTimeout(clearTimer);clearTimeout(hintInfoTimer);
+  freeMode=true;ori=Uint8Array.from(s.ori);spin=Int16Array.from(s.spin);
+  tileEls=s.tileEls.slice();moves=s.moves;best=s.best;
+  history=s.history.map(cloneHistoryEntry);
+  currentInitialState=s.initialState;currentInitialPar=s.initialPar;clearShown=s.clearShown;
+  busy=false;drag=null;svg.classList.remove('spinning','selecting','celebrating');
+  baseTiles.forEach(el=>el.classList.remove('selected'));
+  svg.querySelectorAll('.pivot.active').forEach(el=>el.classList.remove('active'));
+  $('msg').classList.remove('show','tip');
+  $('clearNext').hidden=!clearShown;
+  if(clearShown)$('clearNext').textContent='もう一問';
+  paint();
+  renderStageNav();
+}
+function leaveFreeMode(){
+  saveFreeSession();
+  loadStage(stageIndex);
 }
 
 /* ---- ドラッグに追従して自転・公転 ---- */
@@ -662,7 +697,7 @@ function renderProgress(){
 }
 function renderStageNav(){
   $('stageKind').classList.remove('hint-info');
-  $('stageProgress').hidden=freeMode;
+  $('stageProgress').hidden=false;
   $('shuffle').hidden=!freeMode;
   $('prevStage').disabled=freeMode||stageIndex===0;
   $('nextStage').disabled=freeMode||stageIndex===STAGES.length-1;
@@ -717,10 +752,14 @@ function showClearActions(){
 }
 $('prevStage').addEventListener('click',()=>loadStage(stageIndex-1));
 $('nextStage').addEventListener('click',()=>loadStage(stageIndex+1));
-$('freeMode').addEventListener('click',()=>freeMode?loadStage(stageIndex):startFree());
+$('freeMode').addEventListener('click',()=>{
+  if(busy)return;
+  if(freeMode)leaveFreeMode();
+  else restoreFreeSession();
+});
 $('clearNext').addEventListener('click',()=>{
   if(freeMode) startFree();
-  else if(stageIndex===STAGES.length-1) startFree();
+  else if(stageIndex===STAGES.length-1) restoreFreeSession();
   else loadStage(stageIndex+1);
 });
 const PLAY_TIPS=[
@@ -742,10 +781,8 @@ $('showTip').addEventListener('click',()=>{
   if(PLAY_TIPS.length>1)while(i===lastTipIndex)i=(Math.random()*PLAY_TIPS.length)|0;
   lastTipIndex=i;
   const m=$('msg');
-  clearTimeout(tipTimer);
   m.textContent=PLAY_TIPS[i];
   m.classList.add('tip','show');
-  tipTimer=setTimeout(()=>m.classList.remove('show'),5000);
 });
 $('resetProgress').addEventListener('click',()=>{
   if(!confirm('すべてのクリア記録をリセットしますか？')) return;
