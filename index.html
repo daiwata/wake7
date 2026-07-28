@@ -73,10 +73,22 @@
     42%{transform:scale(1.28);color:var(--kin);text-shadow:0 0 12px rgba(201,165,78,.65)}
     100%{transform:scale(1);color:var(--washi);text-shadow:none}
   }
-  .play-actions{display:flex;gap:8px;margin-left:auto}
-  .play-actions .chip{padding:8px 11px;font-size:12px}
-  .clear-actions{min-height:42px;margin-top:2px;display:flex;justify-content:center}
-  .clear-actions[hidden]{display:none}
+  .play-actions{width:100%;display:flex;gap:5px;margin-left:auto}
+  .play-actions .chip{flex:1;white-space:nowrap;padding:8px 5px;font-size:11px}
+  .clear-actions{
+    width:100%;max-width:372px;min-height:42px;margin-top:2px;
+    display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;gap:6px;
+  }
+  .clear-actions .chip{grid-column:2}
+  .clear-actions .chip[hidden]{display:none}
+  .clear-actions .progress-reset{grid-column:3;justify-self:end}
+  .progress-reset{
+    padding:5px 4px;border:0;background:none;color:#718297;
+    font:inherit;font-size:11px;text-decoration:underline;text-underline-offset:3px;
+    cursor:pointer;transition:color .18s;
+  }
+  .progress-reset:hover{color:#A8B6C7}
+  .progress-reset:focus-visible{outline:2px solid var(--washi);outline-offset:3px;border-radius:3px}
 
   #board{
     width:100%;max-width:372px;height:auto;display:block;margin:14px 0 0;
@@ -158,7 +170,8 @@
   <div class="play-actions">
     <button class="chip" id="shuffle" hidden>シャッフル</button>
     <button class="chip" id="reset">やり直す</button>
-    <button class="chip" id="undo">1手もどす</button>
+    <button class="chip" id="undo">1手戻す</button>
+    <button class="chip" id="shortest">最短手数</button>
     <button class="chip" id="hint">ヒント</button>
   </div>
 </div>
@@ -166,8 +179,9 @@
 <svg id="board" viewBox="14 0 293 310" aria-label="七枚のだるま盤"></svg>
 
 <p class="msg" id="msg"></p>
-<div class="clear-actions" id="clearActions" hidden>
-  <button class="chip on" id="clearNext">次の問題へ →</button>
+<div class="clear-actions" id="clearActions">
+  <button class="chip on" id="clearNext" hidden>次の問題へ →</button>
+  <button class="progress-reset" id="resetProgress">進行状況をリセット</button>
 </div>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
   <g id="daruma-body">
@@ -383,6 +397,10 @@ function wakeFeedback(elements){
 }
 function applySwipe(ti,dir,save=true){
   if(save) history.push(snapshot());
+  if($('stageKind').classList.contains('hint-info')){
+    clearTimeout(hintInfoTimer);
+    renderStageNav();
+  }
   const oldSpin=Int16Array.from(spin), oldTiles=tileEls.slice(), c=TRI[ti].cells;
   ori=rollOnce(ori,ti,dir);
   for(let i=0;i<3;i++){
@@ -406,7 +424,7 @@ function setPosition(state,par){
   baseTiles.forEach(el=>el.classList.remove('selected'));
   svg.querySelectorAll('.pivot.active').forEach(el=>el.classList.remove('active'));
   $('msg').classList.remove('show');
-  $('clearActions').hidden=true;
+  $('clearNext').hidden=true;
   paint();
 }
 function loadStage(index){
@@ -530,7 +548,7 @@ $('undo').addEventListener('click',()=>{
   if(busy||!history.length) return;
   cancelTileAnimations();
   clearTimeout(clearTimer); clearShown=false;
-  $('clearActions').hidden=true;
+  $('clearNext').hidden=true;
   svg.classList.remove('celebrating');
   const h=history.pop(); ori=h.o; spin=h.s; tileEls=h.t; moves=h.m;
   $('msg').classList.remove('show'); paint();
@@ -543,6 +561,15 @@ $('reset').addEventListener('click',()=>{
 $('shuffle').addEventListener('click',()=>{
   if(!busy&&freeMode)startFree();
 });
+function showShortestDistance(){
+  if(busy) return;
+  const d=SOLVER.dist[enc(ori)];
+  const kind=$('stageKind');
+  kind.textContent='残り最短 '+d+'手';
+  kind.classList.add('hint-info');
+  clearTimeout(hintInfoTimer);
+}
+$('shortest').addEventListener('click',showShortestDistance);
 function clearHintVisuals(){
   svg.querySelectorAll('.hint-arrow').forEach(el=>el.remove());
   svg.classList.remove('hinting');
@@ -596,11 +623,6 @@ $('hint').addEventListener('click',()=>{
       const el=svg.querySelector('.pivot[data-tri="'+ti+'"]');
       el.classList.add('hi'); setTimeout(()=>el.classList.remove('hi'),1100);
       showHintArrow(ti,dir);
-      const kind=$('stageKind');
-      kind.textContent='あと最短 '+d+'手';
-      kind.classList.add('hint-info');
-      clearTimeout(hintInfoTimer);
-      hintInfoTimer=setTimeout(renderStageNav,1450);
       return;
     }
   }
@@ -676,7 +698,7 @@ function showClearActions(){
   if(freeMode) action.textContent='もう一問';
   else if(stageIndex===STAGES.length-1) action.textContent='フリーモードへ →';
   else action.textContent='次の問題へ →';
-  $('clearActions').hidden=false;
+  action.hidden=false;
 }
 $('prevStage').addEventListener('click',()=>loadStage(stageIndex-1));
 $('nextStage').addEventListener('click',()=>loadStage(stageIndex+1));
@@ -685,6 +707,12 @@ $('clearNext').addEventListener('click',()=>{
   if(freeMode) startFree();
   else if(stageIndex===STAGES.length-1) startFree();
   else loadStage(stageIndex+1);
+});
+$('resetProgress').addEventListener('click',()=>{
+  if(!confirm('すべてのクリア記録をリセットしますか？')) return;
+  clearedStages.clear();
+  try{localStorage.removeItem('wake7-cleared');}catch(_){}
+  loadStage(0);
 });
 
 buildBoard();
