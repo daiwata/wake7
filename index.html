@@ -148,6 +148,7 @@
 <div class="playbar">
   <div class="move-counter"><span>手数</span><b id="moves">0</b></div>
   <div class="play-actions">
+    <button class="chip" id="shuffle" hidden>シャッフル</button>
     <button class="chip" id="reset">やり直す</button>
     <button class="chip" id="undo">1手もどす</button>
     <button class="chip" id="hint">ヒント</button>
@@ -410,7 +411,9 @@ function loadStage(index){
 function startFree(){
   freeMode=true;
   const pool=SOLVER.byDepth[4];
-  setPosition(pool[(Math.random()*pool.length)|0],4);
+  let state=pool[(Math.random()*pool.length)|0];
+  if(pool.length>1)while(state===currentInitialState)state=pool[(Math.random()*pool.length)|0];
+  setPosition(state,4);
   renderStageNav();
 }
 
@@ -529,6 +532,9 @@ $('reset').addEventListener('click',()=>{
   setPosition(currentInitialState,currentInitialPar);
   renderStageNav();
 });
+$('shuffle').addEventListener('click',()=>{
+  if(!busy&&freeMode)startFree();
+});
 function clearHintVisuals(){
   svg.querySelectorAll('.hint-arrow').forEach(el=>el.remove());
   svg.classList.remove('hinting');
@@ -606,6 +612,7 @@ function renderProgress(){
 }
 function renderStageNav(){
   $('stageProgress').hidden=freeMode;
+  $('shuffle').hidden=!freeMode;
   $('prevStage').disabled=freeMode||stageIndex===0;
   $('nextStage').disabled=freeMode||stageIndex===STAGES.length-1;
   $('freeMode').textContent=freeMode?'ステージへ戻る':'フリーモード';
