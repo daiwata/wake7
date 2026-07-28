@@ -43,7 +43,6 @@
   .stage-title{text-align:center;line-height:1.35;color:#9FB0C4;font-size:11px;letter-spacing:.08em}
   .stage-title b{display:block;color:var(--washi);font-size:17px;letter-spacing:.04em}
   .stage-title span{color:#9FB0C4}
-  .stage-title small{display:block;color:var(--kin);font-size:13px;font-weight:700;margin-top:2px}
   .progress{
     width:100%;max-width:372px;display:grid;grid-template-columns:repeat(15,1fr);
     gap:5px;margin:12px 0 2px;
@@ -55,15 +54,18 @@
   .progress button.cleared{background:rgba(201,165,78,.55)}
   .progress button.current{box-shadow:0 0 0 2px var(--kin)}
   .progress button:focus-visible{outline:2px solid var(--washi);outline-offset:3px}
-  .mode-row{width:100%;max-width:372px;display:flex;justify-content:flex-end;margin-top:7px}
-  .mode-row .chip{font-size:11px;padding:6px 12px;background:transparent;border-color:rgba(255,255,255,.1)}
-  .playbar{
-    width:100%;max-width:372px;display:flex;align-items:flex-end;justify-content:space-between;
-    gap:10px 12px;margin-top:10px;flex-wrap:wrap;
+  .mode-row{
+    width:100%;max-width:372px;display:flex;align-items:center;gap:18px;margin-top:10px
   }
-  .move-counter{display:flex;align-items:baseline;gap:8px;color:#9FB0C4;font-size:12px;letter-spacing:.08em}
-  .move-counter b{color:var(--washi);font-size:34px;line-height:1;font-weight:750;font-variant-numeric:tabular-nums}
-  .move-counter b.pulse{animation:movePulse .3s cubic-bezier(.2,.8,.25,1)}
+  .mode-row .chip{font-size:11px;padding:6px 12px;background:transparent;border-color:rgba(255,255,255,.1)}
+  .mode-row .chip{margin-left:auto}
+  .status-metric{display:flex;align-items:baseline;gap:5px;color:#9FB0C4;font-size:11px;letter-spacing:.06em}
+  .status-metric b{color:var(--kin);font-size:27px;line-height:1;font-weight:750;font-variant-numeric:tabular-nums}
+  .status-metric.moves b{color:var(--washi);font-size:34px}
+  .status-metric.moves b.pulse{animation:movePulse .3s cubic-bezier(.2,.8,.25,1)}
+  .playbar{
+    width:100%;max-width:372px;display:flex;justify-content:flex-end;margin-top:10px;
+  }
   @keyframes movePulse{
     0%{transform:scale(1);color:var(--washi);text-shadow:none}
     42%{transform:scale(1.28);color:var(--kin);text-shadow:0 0 12px rgba(201,165,78,.65)}
@@ -122,7 +124,7 @@
   .foot{margin-top:18px;font-size:12.5px;color:#7E8FA3;max-width:30em;text-align:center;line-height:1.9}
   @media (prefers-reduced-motion:reduce){
     .tile,.pivot{transition:none}
-    .move-counter b.pulse{animation:none}
+    .status-metric.moves b.pulse{animation:none}
   }
   @media (max-width:480px){
     body{padding-left:4px;padding-right:4px}
@@ -140,13 +142,16 @@
 
 <div class="stage-nav" id="stageNav">
   <button class="chip" id="prevStage" aria-label="前の問題">← 前へ</button>
-  <div class="stage-title"><span id="stageKind">問題</span><b id="stageNumber">1 / 15</b><small id="stagePar">最短1手</small></div>
+  <div class="stage-title"><span id="stageKind">問題</span><b id="stageNumber">1 / 15</b></div>
   <button class="chip" id="nextStage" aria-label="次の問題">次へ →</button>
 </div>
 <div class="progress" id="stageProgress" aria-label="全15問の進捗"></div>
-<div class="mode-row"><button class="chip" id="freeMode">フリーモード</button></div>
+<div class="mode-row">
+  <div class="status-metric"><span>最短</span><b id="stagePar">1</b><span>手</span></div>
+  <div class="status-metric moves"><span>手数</span><b id="moves">0</b></div>
+  <button class="chip" id="freeMode">フリーモード</button>
+</div>
 <div class="playbar">
-  <div class="move-counter"><span>手数</span><b id="moves">0</b></div>
   <div class="play-actions">
     <button class="chip" id="shuffle" hidden>シャッフル</button>
     <button class="chip" id="reset">やり直す</button>
@@ -619,11 +624,11 @@ function renderStageNav(){
   if(freeMode){
     $('stageKind').textContent='FREE PLAY';
     $('stageNumber').textContent='フリーモード';
-    $('stagePar').textContent='最短4手・毎回ランダム';
+    $('stagePar').textContent='4';
   }else{
     $('stageKind').textContent=stageIndex<2?'入門':stageIndex<11?'基本':'挑戦';
     $('stageNumber').textContent=(stageIndex+1)+' / '+STAGES.length;
-    $('stagePar').textContent='最短'+STAGES[stageIndex].par+'手';
+    $('stagePar').textContent=STAGES[stageIndex].par;
   }
   renderProgress();
 }
