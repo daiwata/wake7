@@ -975,10 +975,14 @@ function clearHintVisuals(preserveSelection=false){
 }
 function showHintArrow(ti,dir,both=false,persistent=false){
   clearHintVisuals();
-  const NS_='http://www.w3.org/2000/svg', t=TRI[ti], r=38;
+  const NS_='http://www.w3.org/2000/svg',t=TRI[ti],r=38;
   svg.classList.add('hinting');
   for(const i of t.cells) tileEls[i].classList.add('selected');
-  const startAngle=dir>0?-125:125, endAngle=dir>0?125:-125;
+  // Start on the outer side of each pivot. At this point the intended pivot is
+  // always the nearest one, so grabbing the arrow cannot select its neighbour.
+  const boardCenter=CELL[3];
+  const outwardAngle=Math.atan2(t.y-boardCenter.y,t.x-boardCenter.x)*180/Math.PI;
+  const startAngle=outwardAngle,endAngle=startAngle+dir*250;
   const shaftEnd=endAngle-dir*22;
   const point=a=>{
     const q=a*Math.PI/180;
