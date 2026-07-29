@@ -999,7 +999,7 @@ function showHintArrow(ti,dir,both=false,persistent=false){
   // always the nearest one, so grabbing the arrow cannot select its neighbour.
   const boardCenter=CELL[3];
   const outwardAngle=Math.atan2(t.y-boardCenter.y,t.x-boardCenter.x)*180/Math.PI;
-  const startAngle=outwardAngle,endAngle=startAngle+dir*250;
+  const startAngle=outwardAngle,endAngle=startAngle+dir*120;
   const shaftEnd=endAngle-dir*22;
   const point=a=>{
     const q=a*Math.PI/180;
@@ -1025,7 +1025,7 @@ function showHintArrow(ti,dir,both=false,persistent=false){
   const g=document.createElementNS(NS_,'g');
   g.setAttribute('class','hint-arrow'+(persistent?' tutorial':''));
   g.innerHTML='<path class="arc" d="M '+start.x.toFixed(2)+' '+start.y.toFixed(2)
-    +' A '+r+' '+r+' 0 1 '+(dir>0?1:0)+' '+base.x.toFixed(2)+' '+base.y.toFixed(2)+'"/>'
+    +' A '+r+' '+r+' 0 0 '+(dir>0?1:0)+' '+base.x.toFixed(2)+' '+base.y.toFixed(2)+'"/>'
     +'<path class="head" d="M '+tip.x.toFixed(2)+' '+tip.y.toFixed(2)
     +' L '+w1.x.toFixed(2)+' '+w1.y.toFixed(2)
     +' L '+w2.x.toFixed(2)+' '+w2.y.toFixed(2)+' Z"/>'+secondHead;
