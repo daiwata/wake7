@@ -22,7 +22,26 @@
     color:var(--washi);font-family:"A1 Gothic","Hiragino Kaku Gothic ProN","Yu Gothic",YuGothic,"Noto Sans JP",sans-serif;
     min-height:100vh;padding:26px 12px max(12px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;
   }
-  .brand{display:flex;flex-direction:column;align-items:center}
+  .brand{position:relative;width:100%;max-width:372px;display:flex;flex-direction:column;align-items:center}
+  .language-picker{position:absolute;z-index:20;top:0;right:0}
+  .language-toggle{
+    display:grid;place-items:center;width:34px;height:34px;padding:0;border:1px solid rgba(255,255,255,.14);
+    border-radius:50%;background:rgba(22,40,60,.72);color:#9FB0C4;font-size:17px;cursor:pointer;
+  }
+  .language-toggle:hover,.language-toggle[aria-expanded="true"]{border-color:#62B8D2;color:#62B8D2}
+  .language-toggle:focus-visible{outline:2px solid var(--washi);outline-offset:2px}
+  .language-menu{
+    position:absolute;top:calc(100% + 7px);right:0;display:none;width:150px;padding:5px;
+    border:1px solid rgba(255,255,255,.14);border-radius:9px;background:#172C43;
+    box-shadow:0 18px 44px rgba(0,0,0,.45);
+  }
+  .language-menu.show{display:grid}
+  .language-menu button{
+    min-height:38px;padding:7px 10px;border:0;border-radius:6px;background:transparent;
+    color:#9FB0C4;font:inherit;font-size:12px;font-weight:700;line-height:1.2;text-align:left;cursor:pointer;
+  }
+  .language-menu button:hover{background:rgba(98,184,210,.1);color:var(--washi)}
+  .language-menu button[aria-checked="true"]{background:#183952;color:#62B8D2}
   h1{font-size:25px;font-weight:800;letter-spacing:.07em;margin-top:8px}
   .sub{
     display:flex;align-items:center;gap:10px;font-size:10px;font-weight:750;
@@ -169,6 +188,17 @@
     filter:drop-shadow(0 0 3px rgba(22,40,60,.9));
   }
   .hint-arrow .head{fill:#62B8D2;filter:drop-shadow(0 0 3px rgba(22,40,60,.9))}
+  .axis-guide{pointer-events:none}
+  .axis-guide .ray{fill:none;stroke:#62B8D2;stroke-linecap:round}
+  .axis-guide .ray{stroke-width:2;opacity:.48;stroke-dasharray:3 5}
+  .axis-guide .axis-ring{
+    fill:none;stroke:#62B8D2;stroke-width:2;transform-box:fill-box;
+    transform-origin:center;animation:axisGuidePulse .55s ease-out both;
+  }
+  @keyframes axisGuidePulse{
+    0%{opacity:.95;transform:scale(.45)}
+    100%{opacity:.12;transform:scale(1.8)}
+  }
   @keyframes hintArrow{
     0%{opacity:0}18%,72%{opacity:1}100%{opacity:0}
   }
@@ -212,6 +242,15 @@
 <header class="brand">
   <p class="sub">WAKE SEVEN</p>
   <h1>だるまさんを起こして！</h1>
+  <div class="language-picker">
+    <button class="language-toggle" id="languageToggle" type="button" aria-label="言語を選ぶ" aria-expanded="false">🌐</button>
+    <div class="language-menu" id="languageMenu" role="radiogroup" aria-label="言語">
+      <button type="button" role="radio" data-lang="ja" aria-checked="true">日本語</button>
+      <button type="button" role="radio" data-lang="en" aria-checked="false">English</button>
+      <button type="button" role="radio" data-lang="zh" aria-checked="false">简体中文</button>
+      <button type="button" role="radio" data-lang="ko" aria-checked="false">한국어</button>
+    </div>
+  </div>
 </header>
 
 <div class="stage-nav" id="stageNav">
@@ -221,9 +260,9 @@
 </div>
 <div class="progress" id="stageProgress" aria-label="全15問の進捗"></div>
 <div class="mode-row">
-  <div class="status-metric"><span>最短</span><b id="stagePar">1</b><span>手</span></div>
+  <div class="status-metric"><span id="shortestLabel">最短</span><b id="stagePar">1</b><span id="moveUnit">手</span></div>
   <span class="status-separator">/</span>
-  <div class="status-metric moves"><span>手数</span><b id="moves">0</b></div>
+  <div class="status-metric moves"><span id="movesLabel">手数</span><b id="moves">0</b></div>
   <div class="mode-switches">
     <button class="chip" id="stageMode">ステージモード</button>
     <button class="chip" id="freeMode">フリーモード</button>
@@ -390,6 +429,80 @@ const STAGES=[
   {state:7,par:2},
   {state:552,par:3},{state:292,par:3},{state:1006,par:3},{state:208,par:3}
 ];
+let currentLang='ja';
+const UI_TEXT={
+  ja:{
+    pageTitle:'だるまさんを起こして！ — WAKE SEVEN',language:'言語を選ぶ',title:'だるまさんを起こして！',
+    prev:'前へ',next:'次へ',progress:'全15問の進捗',shortest:'最短',moveUnit:'手',moves:'手数',
+    stageMode:'ステージモード',freeMode:'フリーモード',shuffle:'シャッフル',reset:'やり直す',
+    resetAll:'全員立つ',undo:'1手戻す',shortestMoves:'最短手数',hint:'ヒント',
+    mirror:'左右反転',rotate:'60°回転',boardLabel:'七枚のだるま盤',tips:'攻略のコツ',
+    makeBoard:'盤面を作る',playBoard:'この盤面で遊ぶ',nextPuzzle:'次の問題へ →',
+    resetProgress:'進行状況をリセット',stage:'問題',intro:'入門',basic:'基本',challenge:'挑戦',
+    freePlay:'フリーモード',boardMaker:'盤面を作る',customPuzzle:'自作問題',
+    freeKind:'FREE PLAY',makerKind:'BOARD MAKER',customKind:'CUSTOM PLAY',
+    another:'もう一問',again:'もう一度',toFree:'フリーモードへ →',
+    optimalClear:'最短で全員起きました。お見事。',clear:'全員起きました。',
+    remaining:'残り最短 {n}手',stageAria:'問題{n}、最短{par}手',
+    makerImpossible:'この配置は解けません。ダルマをタップして向きを変えてください',
+    makerStatus:'ダルマをタップして向きを変更　現在の最短は{n}手',
+    resetConfirm:'すべてのクリア記録をリセットしますか？'
+  },
+  en:{
+    pageTitle:'Wake the Daruma! — WAKE SEVEN',language:'Choose language',title:'Wake the Daruma!',
+    prev:'Previous',next:'Next',progress:'Progress through 15 puzzles',shortest:'Best',moveUnit:'moves',moves:'Moves',
+    stageMode:'Puzzles',freeMode:'Free Play',shuffle:'Shuffle',reset:'Restart',resetAll:'Stand all up',
+    undo:'Undo',shortestMoves:'Moves left',hint:'Hint',mirror:'Mirror',rotate:'Rotate 60°',
+    boardLabel:'Seven-daruma puzzle board',tips:'Quick tip',makeBoard:'Board Maker',
+    playBoard:'Play this board',nextPuzzle:'Next puzzle →',resetProgress:'Reset progress',
+    stage:'Puzzle',intro:'INTRO',basic:'BASIC',challenge:'CHALLENGE',freePlay:'Free Play',
+    boardMaker:'Board Maker',customPuzzle:'Custom Puzzle',freeKind:'FREE PLAY',
+    makerKind:'BOARD MAKER',customKind:'CUSTOM PLAY',another:'Another puzzle',again:'Try again',
+    toFree:'Go to Free Play →',optimalClear:'Everyone is awake in the fewest moves. Brilliant!',
+    clear:'Everyone is awake!',remaining:'Best: {n} moves left',
+    stageAria:'Puzzle {n}, best in {par} moves',
+    makerImpossible:'This position cannot be solved. Tap a daruma to change its direction.',
+    makerStatus:'Tap a daruma to change its direction · Best: {n} moves',
+    resetConfirm:'Reset all cleared-puzzle progress?'
+  },
+  zh:{
+    pageTitle:'叫醒不倒翁！— WAKE SEVEN',language:'选择语言',title:'叫醒不倒翁！',
+    prev:'上一题',next:'下一题',progress:'15题进度',shortest:'最少',moveUnit:'步',moves:'步数',
+    stageMode:'关卡模式',freeMode:'自由模式',shuffle:'打乱',reset:'重新开始',resetAll:'全部立起',
+    undo:'撤销一步',shortestMoves:'最少步数',hint:'提示',mirror:'左右翻转',rotate:'旋转60°',
+    boardLabel:'七个不倒翁的谜题棋盘',tips:'攻略提示',makeBoard:'制作棋盘',
+    playBoard:'玩这个棋盘',nextPuzzle:'下一题 →',resetProgress:'重置进度',
+    stage:'关卡',intro:'入门',basic:'基础',challenge:'挑战',freePlay:'自由模式',
+    boardMaker:'制作棋盘',customPuzzle:'自制关卡',freeKind:'自由模式',
+    makerKind:'制作棋盘',customKind:'自制关卡',another:'再来一题',again:'再来一次',
+    toFree:'进入自由模式 →',optimalClear:'用最少步数叫醒了全部不倒翁。太棒了！',
+    clear:'全部醒来了！',remaining:'还需最少 {n} 步',stageAria:'第{n}题，最少{par}步',
+    makerImpossible:'这个布局无法解开。点击不倒翁改变方向。',
+    makerStatus:'点击不倒翁改变方向　目前最少需要{n}步',
+    resetConfirm:'要重置所有通关记录吗？'
+  },
+  ko:{
+    pageTitle:'다루마를 깨워라! — WAKE SEVEN',language:'언어 선택',title:'다루마를 깨워라!',
+    prev:'이전',next:'다음',progress:'15문제 진행 상황',shortest:'최단',moveUnit:'수',moves:'수',
+    stageMode:'문제 모드',freeMode:'자유 모드',shuffle:'섞기',reset:'다시 시작',resetAll:'모두 세우기',
+    undo:'한 수 되돌리기',shortestMoves:'최단 수',hint:'힌트',mirror:'좌우 반전',rotate:'60° 회전',
+    boardLabel:'일곱 다루마 퍼즐판',tips:'공략 팁',makeBoard:'보드 만들기',
+    playBoard:'이 보드로 플레이',nextPuzzle:'다음 문제 →',resetProgress:'진행 상황 초기화',
+    stage:'문제',intro:'입문',basic:'기본',challenge:'도전',freePlay:'자유 모드',
+    boardMaker:'보드 만들기',customPuzzle:'사용자 문제',freeKind:'자유 모드',
+    makerKind:'보드 만들기',customKind:'사용자 문제',another:'다른 문제',again:'다시 하기',
+    toFree:'자유 모드로 →',optimalClear:'최단 수로 모두 깨웠습니다. 훌륭해요!',
+    clear:'모두 깨어났습니다!',remaining:'남은 최단 {n}수',stageAria:'문제 {n}, 최단 {par}수',
+    makerImpossible:'이 배치는 풀 수 없습니다. 다루마를 눌러 방향을 바꾸세요.',
+    makerStatus:'다루마를 눌러 방향 변경　현재 최단 {n}수',
+    resetConfirm:'모든 클리어 기록을 초기화할까요?'
+  }
+};
+function tr(key,vars){
+  let value=(UI_TEXT[currentLang]&&UI_TEXT[currentLang][key])||UI_TEXT.ja[key]||key;
+  if(vars)Object.keys(vars).forEach(name=>value=value.replaceAll('{'+name+'}',vars[name]));
+  return value;
+}
 
 /* ---- 盤面 ---- */
 const svg=document.getElementById('board'), $=id=>document.getElementById(id);
@@ -461,7 +574,7 @@ function paint(){
     }
     const m=$('msg');
     m.classList.remove('tip','long-tip');
-    m.textContent = moves===best ? '最短で全員起きました。お見事。' : '全員起きました。';
+    m.textContent=moves===best?tr('optimalClear'):tr('clear');
     m.classList.add('show');
     clearTimeout(clearTimer);
     clearTimer=setTimeout(showClearActions,650);
@@ -632,7 +745,7 @@ function restoreFreeSession(){
   $('msg').textContent='';
   $('msg').classList.remove('show','tip','long-tip');
   $('clearNext').hidden=!clearShown;
-  if(clearShown)$('clearNext').textContent='もう一問';
+  if(clearShown)$('clearNext').textContent=tr('another');
   paint();
   renderStageNav();
 }
@@ -647,9 +760,7 @@ function showMakerMessage(){
   const d=makerDistance(),m=$('msg');
   m.classList.remove('long-tip');
   m.classList.add('tip','show');
-  m.textContent=d===255
-    ?'この配置は解けません。ダルマをタップして向きを変えてください'
-    :'ダルマをタップして向きを変更　現在の最短は'+d+'手';
+  m.textContent=d===255?tr('makerImpossible'):tr('makerStatus',{n:d});
   $('stagePar').textContent=d===255?'—':d;
   $('customMode').disabled=d===255||d===0;
 }
@@ -699,6 +810,32 @@ function effectiveTurn(turns){
   const n=((turns%3)+3)%3;
   return n===1?1:n===2?-1:0;
 }
+function clearAxisGuide(){
+  svg.querySelectorAll('.axis-guide').forEach(el=>el.remove());
+}
+function showAxisGuide(t){
+  clearAxisGuide();
+  const NS_='http://www.w3.org/2000/svg';
+  const g=document.createElementNS(NS_,'g');
+  g.setAttribute('class','axis-guide');
+  const rays=document.createElementNS(NS_,'g');
+  rays.setAttribute('class','axis-rays');
+  for(const i of t.cells){
+    const c=CELL[i], ratio=.57;
+    const line=document.createElementNS(NS_,'line');
+    line.setAttribute('class','ray');
+    line.setAttribute('x1',t.x);line.setAttribute('y1',t.y);
+    line.setAttribute('x2',t.x+(c.x-t.x)*ratio);
+    line.setAttribute('y2',t.y+(c.y-t.y)*ratio);
+    rays.appendChild(line);
+  }
+  g.appendChild(rays);
+  const ring=document.createElementNS(NS_,'circle');
+  ring.setAttribute('class','axis-ring');
+  ring.setAttribute('cx',t.x);ring.setAttribute('cy',t.y);ring.setAttribute('r',7);
+  g.appendChild(ring);
+  svg.appendChild(g);
+}
 svg.addEventListener('pointerdown',e=>{
   if(busy||(e.pointerType==='mouse'&&e.button!==0)) return;
   if(editingBoard){
@@ -736,6 +873,7 @@ svg.addEventListener('pointerdown',e=>{
   baseTiles.forEach(el=>el.classList.toggle('selected',selectedTiles.has(el)));
   cancelTileAnimations();
   const r=Math.hypot(p.x-t.x,p.y-t.y);
+  showAxisGuide(t);
   const items=t.cells.map(from=>({
     from,el:tileEls[from],turn:spin[from],
     dx:CELL[from].x-t.x,dy:CELL[from].y-t.y
@@ -763,6 +901,8 @@ svg.addEventListener('pointermove',e=>{
   drag.last=a;
   drag.rawDeg+=d*180/Math.PI;
   drag.deg=drag.rawDeg;
+  const guideRays=svg.querySelector('.axis-guide .axis-rays');
+  if(guideRays)guideRays.setAttribute('transform','rotate('+drag.deg+' '+t.x+' '+t.y+')');
   showMoves(moves+(effectiveTurn(Math.round(drag.deg/120))?1:0));
   for(const item of drag.items){
     item.el.style.transform=orbitTransform(item,drag.deg,t);
@@ -771,7 +911,7 @@ svg.addEventListener('pointermove',e=>{
 });
 function finishDrag(e,cancel=false){
   if(!drag||(e&&e.pointerId!==drag.id)) return;
-  const dg=drag; drag=null; svg.classList.remove('spinning');
+  const dg=drag; drag=null; clearAxisGuide(); svg.classList.remove('spinning');
   svg.classList.remove('selecting');
   for(const item of dg.items) item.el.classList.remove('selected');
   svg.querySelectorAll('.pivot.active').forEach(el=>el.classList.remove('active'));
@@ -823,7 +963,7 @@ function showShortestDistance(){
   if(busy) return;
   const d=SOLVER.dist[enc(ori)];
   const kind=$('stageKind');
-  kind.textContent='残り最短 '+d+'手';
+  kind.textContent=tr('remaining',{n:d});
   kind.classList.add('hint-info');
   clearTimeout(hintInfoTimer);
 }
@@ -906,12 +1046,13 @@ function renderProgress(){
   if(!progress.children.length){
     STAGES.forEach((stage,i)=>{
       const b=document.createElement('button');
-      b.setAttribute('aria-label','問題'+(i+1)+'、最短'+stage.par+'手');
+      b.setAttribute('aria-label',tr('stageAria',{n:i+1,par:stage.par}));
       b.addEventListener('click',()=>loadStage(i));
       progress.appendChild(b);
     });
   }
   [...progress.children].forEach((b,i)=>{
+    b.setAttribute('aria-label',tr('stageAria',{n:i+1,par:STAGES[i].par}));
     b.classList.toggle('cleared',clearedStages.has(i));
     b.classList.toggle('current',!freeMode&&!customMode&&i===stageIndex);
     b.disabled=freeMode||customMode;
@@ -926,29 +1067,29 @@ function renderStageNav(){
   $('undo').hidden=editingBoard;
   $('shortest').hidden=editingBoard;
   $('hint').hidden=editingBoard;
-  $('reset').textContent=editingBoard?'全員立つ':'やり直す';
+  $('reset').textContent=editingBoard?tr('resetAll'):tr('reset');
   $('prevStage').disabled=freeMode||customMode||stageIndex===0;
   $('nextStage').disabled=freeMode||customMode||stageIndex===STAGES.length-1;
   $('stageMode').classList.toggle('on',!freeMode&&!customMode);
   $('freeMode').classList.toggle('on',freeMode);
   $('stageMode').setAttribute('aria-pressed',String(!freeMode&&!customMode));
   $('freeMode').setAttribute('aria-pressed',String(freeMode));
-  $('customMode').textContent=editingBoard?'この盤面で遊ぶ':'盤面を作る';
+  $('customMode').textContent=editingBoard?tr('playBoard'):tr('makeBoard');
   $('customMode').classList.toggle('ready',editingBoard);
   $('customMode').hidden=!$('clearNext').hidden;
   $('customMode').disabled=false;
   if(freeMode){
-    $('stageKind').textContent='FREE PLAY';
-    $('stageNumber').textContent='フリーモード';
+    $('stageKind').textContent=tr('freeKind');
+    $('stageNumber').textContent=tr('freePlay');
     $('stagePar').textContent='4';
   }else if(customMode){
-    $('stageKind').textContent=editingBoard?'BOARD MAKER':'CUSTOM PLAY';
-    $('stageNumber').textContent=editingBoard?'盤面を作る':'自作問題';
+    $('stageKind').textContent=editingBoard?tr('makerKind'):tr('customKind');
+    $('stageNumber').textContent=editingBoard?tr('boardMaker'):tr('customPuzzle');
     const d=SOLVER.dist[enc(ori)];
     $('stagePar').textContent=d===255?'—':d;
     if(editingBoard)$('customMode').disabled=d===255||d===0;
   }else{
-    $('stageKind').textContent=stageIndex<2?'入門':stageIndex<11?'基本':'挑戦';
+    $('stageKind').textContent=stageIndex<2?tr('intro'):stageIndex<11?tr('basic'):tr('challenge');
     $('stageNumber').textContent=(stageIndex+1)+' / '+STAGES.length;
     $('stagePar').textContent=STAGES[stageIndex].par;
   }
@@ -986,10 +1127,10 @@ function celebrateClear(){
 function showClearActions(){
   celebrateClear();
   const action=$('clearNext');
-  if(freeMode) action.textContent='もう一問';
-  else if(customMode) action.textContent='もう一度';
-  else if(stageIndex===STAGES.length-1) action.textContent='フリーモードへ →';
-  else action.textContent='次の問題へ →';
+  if(freeMode)action.textContent=tr('another');
+  else if(customMode)action.textContent=tr('again');
+  else if(stageIndex===STAGES.length-1)action.textContent=tr('toFree');
+  else action.textContent=tr('nextPuzzle');
   $('customMode').hidden=true;
   action.hidden=false;
 }
@@ -1019,32 +1160,147 @@ $('clearNext').addEventListener('click',()=>{
   else if(stageIndex===STAGES.length-1) restoreFreeSession();
   else loadStage(stageIndex+1);
 });
-const PLAY_TIPS=[
-  '4体立ち：小三角は最短1手、大三角は最短4手、ほかは最短3手',
-  '5体立ちで中央が寝ていれば、向きに関係なく最短2手',
-  '5体立ち：外周で隣り合う寝た2体のうち、10分前が右転び＋10分後が左転びなら最短2手',
-  '5体立ちで寝た2体が外周で離れていれば最短3手',
-  '4体寝のひし形：対角が同じ向きなら最短3手、違えば最短2手',
-  '4体寝の芋虫：目玉同士、体同士がそれぞれ同じ向きなら最短2手',
-  '5体寝台形：仲間外れが中央以外で、近い立ちの10分前＋右転びなら最短2手、近い立ちの10分後＋左転びなら最短2手',
-  '5体寝台形：仲間外れが中央以外で、近い立ちの20分前＋左転びなら最短2手、近い立ちの20分後＋右転びなら最短2手',
-  '5体寝のバーベル：仲間外れが中央以外で、隣の立ちの10分前＋右転びなら最短2手、隣の立ちの10分後＋左転びなら最短2手',
-  '中央だけが立っている形は、向きに関係なく最短4手',
-  '外周を1つおきに3体立っている形は最短3手',
-  '最短2手は対称な形を除くと9パターン。ステージ3〜11で全種類を網羅'
-];
+const PLAY_TIPS={
+  ja:[
+    '4体立ち：小三角は最短1手、大三角は最短4手、ほかは最短3手',
+    '5体立ちで中央が寝ていれば、向きに関係なく最短2手',
+    '5体立ち：外周で隣り合う寝た2体のうち、10分前が右転び＋10分後が左転びなら最短2手',
+    '5体立ちで寝た2体が外周で離れていれば最短3手',
+    '4体寝のひし形：対角が同じ向きなら最短3手、違えば最短2手',
+    '4体寝の芋虫：目玉同士、体同士がそれぞれ同じ向きなら最短2手',
+    '5体寝台形：仲間外れが中央以外で、近い立ちの10分前＋右転びなら最短2手、近い立ちの10分後＋左転びなら最短2手',
+    '5体寝台形：仲間外れが中央以外で、近い立ちの20分前＋左転びなら最短2手、近い立ちの20分後＋右転びなら最短2手',
+    '5体寝のバーベル：仲間外れが中央以外で、隣の立ちの10分前＋右転びなら最短2手、隣の立ちの10分後＋左転びなら最短2手',
+    '中央だけが立っている形は、向きに関係なく最短4手',
+    '外周を1つおきに3体立っている形は最短3手',
+    '最短2手は対称な形を除くと9パターン。ステージ3〜11で全種類を網羅'
+  ],
+  en:[
+    'With 4 standing: a small triangle is 1 move, a large triangle 4, and all other shapes 3.',
+    'With 5 standing, if the center is fallen, the solution is always 2 moves regardless of direction.',
+    'With 5 standing and two adjacent outer fallen daruma: the 10-minutes-before one falling right and the 10-minutes-after one falling left means 2 moves.',
+    'With 5 standing, two separated fallen daruma on the rim mean 3 moves.',
+    'Four fallen in a diamond: matching diagonal directions mean 3 moves; different directions mean 2.',
+    'Four fallen in a caterpillar: matching eyes and matching body directions mean 2 moves.',
+    'Five fallen in a trapezoid: an off-center odd one is 2 moves when it is 10 minutes before the nearer standing daruma and falls right, or 10 minutes after and falls left.',
+    'Five fallen in a trapezoid: an off-center odd one is 2 moves when it is 20 minutes before the nearer standing daruma and falls left, or 20 minutes after and falls right.',
+    'Five fallen in a barbell: an off-center odd one is 2 moves when it is 10 minutes before the adjacent standing daruma and falls right, or 10 minutes after and falls left.',
+    'If only the center is standing, the solution is always 4 moves regardless of direction.',
+    'Three standing on alternating outer positions always means 3 moves.',
+    'Up to symmetry there are only nine 2-move patterns. Puzzles 3–11 cover them all.'
+  ],
+  zh:[
+    '4个站立：小三角最少1步，大三角最少4步，其他形状最少3步。',
+    '5个站立且中央倒下时，无论朝向都最少2步。',
+    '5个站立、外圈相邻的两个倒下：10分钟前位置向右倒＋10分钟后位置向左倒时，最少2步。',
+    '5个站立且外圈两个倒下不相邻时，最少3步。',
+    '4个倒下呈菱形：对角朝向相同最少3步，不同则最少2步。',
+    '4个倒下呈毛毛虫形：两只眼同向、身体两格也同向时，最少2步。',
+    '5个倒下呈梯形：异类不在中央，位于较近站立者的10分钟前并向右倒，或10分钟后并向左倒时，最少2步。',
+    '5个倒下呈梯形：异类不在中央，位于较近站立者的20分钟前并向左倒，或20分钟后并向右倒时，最少2步。',
+    '5个倒下呈杠铃形：异类不在中央，位于相邻站立者的10分钟前并向右倒，或10分钟后并向左倒时，最少2步。',
+    '只有中央站立时，无论朝向都最少4步。',
+    '外圈每隔一个站立，共3个站立时，最少3步。',
+    '排除对称后，最少2步的形状只有9种。关卡3～11涵盖全部。'
+  ],
+  ko:[
+    '4개가 서 있을 때: 작은 삼각형은 최단 1수, 큰 삼각형은 4수, 나머지는 3수입니다.',
+    '5개가 서 있고 중앙이 누워 있으면 방향과 관계없이 최단 2수입니다.',
+    '5개가 서 있고 바깥쪽의 누운 둘이 이웃할 때, 10분 전 위치가 오른쪽으로 눕고 10분 후 위치가 왼쪽으로 누우면 최단 2수입니다.',
+    '5개가 서 있고 바깥쪽의 누운 둘이 떨어져 있으면 최단 3수입니다.',
+    '4개가 마름모로 누울 때 대각선 방향이 같으면 최단 3수, 다르면 2수입니다.',
+    '4개가 애벌레 모양으로 누울 때 두 눈끼리, 두 몸끼리 각각 같은 방향이면 최단 2수입니다.',
+    '5개가 사다리꼴로 누울 때 예외가 중앙 밖이며 가까운 선 다루마의 10분 전＋오른쪽 눕기, 또는 10분 후＋왼쪽 눕기면 최단 2수입니다.',
+    '5개가 사다리꼴로 누울 때 예외가 중앙 밖이며 가까운 선 다루마의 20분 전＋왼쪽 눕기, 또는 20분 후＋오른쪽 눕기면 최단 2수입니다.',
+    '5개가 바벨 모양으로 누울 때 예외가 중앙 밖이며 이웃한 선 다루마의 10분 전＋오른쪽 눕기, 또는 10분 후＋왼쪽 눕기면 최단 2수입니다.',
+    '중앙만 서 있으면 방향과 관계없이 최단 4수입니다.',
+    '바깥쪽에 하나씩 건너 3개가 서 있으면 최단 3수입니다.',
+    '대칭을 제외하면 최단 2수 패턴은 9개뿐이며 문제 3~11에 모두 나옵니다.'
+  ]
+};
 $('showTip').addEventListener('click',()=>{
   if(busy||isSolved()) return;
-  let i=(Math.random()*PLAY_TIPS.length)|0;
-  if(PLAY_TIPS.length>1)while(i===lastTipIndex)i=(Math.random()*PLAY_TIPS.length)|0;
+  const tips=PLAY_TIPS[currentLang]||PLAY_TIPS.ja;
+  let i=(Math.random()*tips.length)|0;
+  if(tips.length>1)while(i===lastTipIndex)i=(Math.random()*tips.length)|0;
   lastTipIndex=i;
   const m=$('msg');
-  m.textContent=PLAY_TIPS[i];
-  m.classList.toggle('long-tip',PLAY_TIPS[i].length>34);
+  m.textContent=tips[i];
+  m.classList.toggle('long-tip',tips[i].length>34);
   m.classList.add('tip','show');
 });
+function applyLanguage(lang){
+  if(!UI_TEXT[lang])return;
+  currentLang=lang;
+  document.documentElement.lang=lang==='zh'?'zh-CN':lang;
+  document.title=tr('pageTitle');
+  document.querySelector('h1').textContent=tr('title');
+  $('languageToggle').setAttribute('aria-label',tr('language'));
+  $('languageMenu').setAttribute('aria-label',tr('language'));
+  document.querySelectorAll('[data-lang]').forEach(button=>{
+    button.setAttribute('aria-checked',String(button.dataset.lang===lang));
+  });
+  $('prevStage').textContent='← '+tr('prev');
+  $('prevStage').setAttribute('aria-label',tr('prev'));
+  $('nextStage').textContent=tr('next')+' →';
+  $('nextStage').setAttribute('aria-label',tr('next'));
+  $('stageProgress').setAttribute('aria-label',tr('progress'));
+  $('shortestLabel').textContent=tr('shortest');
+  $('moveUnit').textContent=tr('moveUnit');
+  $('movesLabel').textContent=tr('moves');
+  $('stageMode').textContent=tr('stageMode');
+  $('freeMode').textContent=tr('freeMode');
+  $('shuffle').textContent=tr('shuffle');
+  $('undo').textContent=tr('undo');
+  $('shortest').textContent=tr('shortestMoves');
+  $('hint').textContent=tr('hint');
+  $('mirrorBoard').textContent=tr('mirror');
+  $('rotateBoard').textContent=tr('rotate');
+  $('board').setAttribute('aria-label',tr('boardLabel'));
+  $('showTip').textContent=tr('tips');
+  $('resetProgress').textContent=tr('resetProgress');
+  renderStageNav();
+  if(editingBoard)showMakerMessage();
+  else if(clearShown){
+    const m=$('msg');
+    m.textContent=moves===best?tr('optimalClear'):tr('clear');
+    const action=$('clearNext');
+    if(freeMode)action.textContent=tr('another');
+    else if(customMode)action.textContent=tr('again');
+    else if(stageIndex===STAGES.length-1)action.textContent=tr('toFree');
+    else action.textContent=tr('nextPuzzle');
+  }else if(lastTipIndex>=0&&$('msg').classList.contains('tip')){
+    const tips=PLAY_TIPS[currentLang]||PLAY_TIPS.ja;
+    $('msg').textContent=tips[lastTipIndex];
+    $('msg').classList.toggle('long-tip',tips[lastTipIndex].length>34);
+  }
+}
+$('languageToggle').addEventListener('click',e=>{
+  e.stopPropagation();
+  const menu=$('languageMenu'),open=!menu.classList.contains('show');
+  menu.classList.toggle('show',open);
+  $('languageToggle').setAttribute('aria-expanded',String(open));
+  if(open){
+    const selected=menu.querySelector('[data-lang="'+currentLang+'"]');
+    if(selected)selected.focus();
+  }
+});
+document.querySelectorAll('[data-lang]').forEach(button=>{
+  button.addEventListener('click',()=>{
+    applyLanguage(button.dataset.lang);
+    $('languageMenu').classList.remove('show');
+    $('languageToggle').setAttribute('aria-expanded','false');
+    $('languageToggle').focus();
+  });
+});
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.language-picker')){
+    $('languageMenu').classList.remove('show');
+    $('languageToggle').setAttribute('aria-expanded','false');
+  }
+});
 $('resetProgress').addEventListener('click',()=>{
-  if(!confirm('すべてのクリア記録をリセットしますか？')) return;
+  if(!confirm(tr('resetConfirm'))) return;
   clearedStages.clear();
   try{localStorage.removeItem('wake7-cleared');}catch(_){}
   loadStage(0);
@@ -1053,6 +1309,7 @@ $('resetProgress').addEventListener('click',()=>{
 buildBoard();
 renderProgress();
 loadStage(0);
+applyLanguage('ja');
 
 if(document.documentElement.classList.contains('embed')&&window.parent!==window){
   const embedContentEnd=document.querySelector('.clear-actions');
