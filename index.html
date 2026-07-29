@@ -518,6 +518,7 @@ let tileEls=[], baseTiles=[], drag=null, busy=false;
 let stageIndex=0, freeMode=false, clearShown=false, clearTimer=0, hintInfoTimer=0;
 let customMode=false,editingBoard=false;
 let tutorialHintTimers=[];
+let makerButtonBlockedUntil=0,makerRevealTimer=0;
 let currentInitialState=0, currentInitialPar=0;
 let lastTipIndex=-1;
 let savedFreeSession=null;
@@ -1097,7 +1098,7 @@ function renderStageNav(){
   $('freeMode').setAttribute('aria-pressed',String(freeMode));
   $('customMode').textContent=editingBoard?tr('playBoard'):tr('makeBoard');
   $('customMode').classList.toggle('ready',editingBoard);
-  $('customMode').hidden=!$('clearNext').hidden;
+  $('customMode').hidden=!$('clearNext').hidden||performance.now()<makerButtonBlockedUntil;
   $('customMode').disabled=false;
   if(freeMode){
     $('stageKind').textContent=tr('freeKind');
@@ -1160,6 +1161,7 @@ $('nextStage').addEventListener('click',()=>loadStage(stageIndex+1));
 $('mirrorBoard').addEventListener('click',()=>reorientBoard(VIEW_MIRROR,true));
 $('rotateBoard').addEventListener('click',()=>reorientBoard(VIEW_ROTATE_60,false,60));
 $('customMode').addEventListener('click',()=>{
+  if(performance.now()<makerButtonBlockedUntil)return;
   if(editingBoard)playCustomBoard();
   else enterBoardMaker();
 });
@@ -1173,6 +1175,12 @@ $('freeMode').addEventListener('click',()=>{
   restoreFreeSession();
 });
 $('clearNext').addEventListener('click',()=>{
+  makerButtonBlockedUntil=performance.now()+600;
+  clearTimeout(makerRevealTimer);
+  makerRevealTimer=setTimeout(()=>{
+    makerButtonBlockedUntil=0;
+    renderStageNav();
+  },600);
   if(freeMode) startFree();
   else if(customMode){
     setPosition(currentInitialState,currentInitialPar);
