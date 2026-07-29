@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>だるまさんを起こして！ — WAKE SEVEN</title>
+<script>
+  if(new URLSearchParams(location.search).get('embed')==='1'){
+    document.documentElement.classList.add('embed');
+  }
+</script>
 <style>
   :root{
     --ai:#16283C; --ai2:#1F3752;
@@ -140,10 +145,12 @@
   #board.selecting .tile.selected.fallen{filter:drop-shadow(0 6px 6px rgba(0,0,0,.24)) saturate(.92)}
   #board.selecting .pivot{opacity:.22}
   #board.selecting .pivot.active{opacity:1}
-  #board.hinting .tile{opacity:.2;filter:saturate(.5) brightness(.68)}
+  #board.hinting .tile{opacity:.58;filter:saturate(.72) brightness(.82)}
   #board.hinting .tile.selected{
-    opacity:1;filter:drop-shadow(0 7px 8px rgba(0,0,0,.32)) brightness(1.06)
+    opacity:1;filter:drop-shadow(0 6px 6px rgba(0,0,0,.24)) brightness(1.04)
   }
+  #board.hinting .tile.selected.stand{filter:drop-shadow(0 6px 6px rgba(0,0,0,.24)) brightness(1.07)}
+  #board.hinting .tile.selected.fallen{filter:drop-shadow(0 6px 6px rgba(0,0,0,.24)) saturate(.92)}
   .hex{fill:var(--washi);stroke:#C0AC88;stroke-width:1.5}
   .tile.fallen .hex{fill:var(--washi2);stroke:#9EA8AF}
   .tile.stand .shut,.tile.fallen .open{display:none}
@@ -156,6 +163,7 @@
     opacity:1;filter:drop-shadow(0 0 5px rgba(201,165,78,.8))
   }
   .hint-arrow{pointer-events:none;animation:hintArrow 1.35s ease both}
+  .hint-arrow.tutorial{animation:none;opacity:1}
   .hint-arrow .arc{
     fill:none;stroke:#62B8D2;stroke-width:5.5;stroke-linecap:round;
     filter:drop-shadow(0 0 3px rgba(22,40,60,.9));
@@ -189,6 +197,14 @@
     .board-wrap{max-width:none}
     .stage-nav,.progress,.mode-row,.playbar{width:calc(100% - 8px)}
   }
+  html.embed,html.embed body{min-height:0}
+  html.embed body{
+    padding-top:14px;
+    padding-bottom:max(8px,env(safe-area-inset-bottom));
+    overflow:hidden;
+  }
+  html.embed h1{margin-top:5px}
+  html.embed .stage-nav{margin-top:12px}
 </style>
 </head>
 <body>
@@ -381,6 +397,7 @@ let ori=new Uint8Array(N), spin=new Int16Array(N), history=[], moves=0, best=0;
 let tileEls=[], baseTiles=[], drag=null, busy=false;
 let stageIndex=0, freeMode=false, clearShown=false, clearTimer=0, hintInfoTimer=0;
 let customMode=false,editingBoard=false;
+let tutorialHintTimers=[];
 let currentInitialState=0, currentInitialPar=0;
 let lastTipIndex=-1;
 let savedFreeSession=null;
@@ -552,6 +569,7 @@ function applySwipe(ti,dir,save=true){
   moves++;
 }
 function setPosition(state,par){
+  cancelTutorialHint();
   cancelTileAnimations();
   clearHintVisuals();
   svg.querySelectorAll('.clear-burst').forEach(el=>el.remove());
@@ -575,6 +593,7 @@ function loadStage(index){
   const stage=STAGES[stageIndex];
   setPosition(stage.state,stage.par);
   renderStageNav();
+  if(stageIndex===0)scheduleStageOneTutorial();
 }
 function startFree(){
   savedFreeSession=null;
@@ -683,6 +702,7 @@ function effectiveTurn(turns){
 svg.addEventListener('pointerdown',e=>{
   if(busy||(e.pointerType==='mouse'&&e.button!==0)) return;
   if(editingBoard){
+    cancelTutorialHint();
     e.preventDefault();
     const p=toView(e);
     let cell=0,distance=Infinity;
@@ -703,13 +723,19 @@ svg.addEventListener('pointerdown',e=>{
     svg.classList.remove('celebrating');
     svg.querySelectorAll('.clear-burst').forEach(el=>el.remove());
   }
-  clearHintVisuals();
   e.preventDefault();
   const p=toView(e);
   let ti=0,bd=Infinity;
   TRI.forEach((t,i)=>{ const d=Math.hypot(t.x-p.x,t.y-p.y); if(d<bd){bd=d;ti=i;} });
+  const t=TRI[ti], selectedTiles=new Set(t.cells.map(i=>tileEls[i]));
+  // Keep the board dimmed while handing off from the stage-one hint to dragging.
+  // Preserve the selected tiles so neither normal nor extra-dark brightness is shown.
+  svg.classList.add('selecting');
+  for(const i of t.cells) tileEls[i].classList.add('selected');
+  cancelTutorialHint(true);
+  baseTiles.forEach(el=>el.classList.toggle('selected',selectedTiles.has(el)));
   cancelTileAnimations();
-  const t=TRI[ti], r=Math.hypot(p.x-t.x,p.y-t.y);
+  const r=Math.hypot(p.x-t.x,p.y-t.y);
   const items=t.cells.map(from=>({
     from,el:tileEls[from],turn:spin[from],
     dx:CELL[from].x-t.x,dy:CELL[from].y-t.y
@@ -722,7 +748,7 @@ svg.addEventListener('pointerdown',e=>{
   for(const item of items) item.el.classList.add('selected');
   svg.querySelector('.pivot[data-tri="'+ti+'"]').classList.add('active');
   svg.setPointerCapture(e.pointerId);
-  svg.classList.add('spinning','selecting');
+  svg.classList.add('spinning');
 });
 svg.addEventListener('pointermove',e=>{
   if(!drag||e.pointerId!==drag.id) return;
@@ -788,6 +814,7 @@ $('reset').addEventListener('click',()=>{
   if(editingBoard){resetMakerBoard();return;}
   setPosition(currentInitialState,currentInitialPar);
   renderStageNav();
+  if(!freeMode&&!customMode&&stageIndex===0)scheduleStageOneTutorial();
 });
 $('shuffle').addEventListener('click',()=>{
   if(!busy&&freeMode)startFree();
@@ -801,18 +828,18 @@ function showShortestDistance(){
   clearTimeout(hintInfoTimer);
 }
 $('shortest').addEventListener('click',showShortestDistance);
-function clearHintVisuals(){
+function clearHintVisuals(preserveSelection=false){
   svg.querySelectorAll('.hint-arrow').forEach(el=>el.remove());
   svg.classList.remove('hinting');
-  baseTiles.forEach(el=>el.classList.remove('selected'));
+  if(!preserveSelection)baseTiles.forEach(el=>el.classList.remove('selected'));
 }
-function showHintArrow(ti,dir,both=false){
+function showHintArrow(ti,dir,both=false,persistent=false){
   clearHintVisuals();
   const NS_='http://www.w3.org/2000/svg', t=TRI[ti], r=38;
   svg.classList.add('hinting');
   for(const i of t.cells) tileEls[i].classList.add('selected');
   const startAngle=dir>0?-125:125, endAngle=dir>0?125:-125;
-  const shaftEnd=endAngle-dir*13;
+  const shaftEnd=endAngle-dir*22;
   const point=a=>{
     const q=a*Math.PI/180;
     return {x:t.x+r*Math.cos(q),y:t.y+r*Math.sin(q)};
@@ -821,30 +848,30 @@ function showHintArrow(ti,dir,both=false){
   const q=endAngle*Math.PI/180;
   const ax=-Math.sin(q)*dir, ay=Math.cos(q)*dir;
   const nx=-ay, ny=ax;
-  const w1={x:base.x+nx*5,y:base.y+ny*5};
-  const w2={x:base.x-nx*5,y:base.y-ny*5};
+  const w1={x:base.x+nx*9,y:base.y+ny*9};
+  const w2={x:base.x-nx*9,y:base.y-ny*9};
   let secondHead='';
   if(both){
-    const sb=point(startAngle+dir*13), sq=startAngle*Math.PI/180;
+    const sb=point(startAngle+dir*22), sq=startAngle*Math.PI/180;
     const sax=Math.sin(sq)*dir, say=-Math.cos(sq)*dir;
     const snx=-say, sny=sax;
-    const sw1={x:sb.x+snx*5,y:sb.y+sny*5};
-    const sw2={x:sb.x-snx*5,y:sb.y-sny*5};
+    const sw1={x:sb.x+snx*9,y:sb.y+sny*9};
+    const sw2={x:sb.x-snx*9,y:sb.y-sny*9};
     secondHead='<path class="head" d="M '+start.x.toFixed(2)+' '+start.y.toFixed(2)
       +' L '+sw1.x.toFixed(2)+' '+sw1.y.toFixed(2)
       +' L '+sw2.x.toFixed(2)+' '+sw2.y.toFixed(2)+' Z"/>';
   }
   const g=document.createElementNS(NS_,'g');
-  g.setAttribute('class','hint-arrow');
+  g.setAttribute('class','hint-arrow'+(persistent?' tutorial':''));
   g.innerHTML='<path class="arc" d="M '+start.x.toFixed(2)+' '+start.y.toFixed(2)
     +' A '+r+' '+r+' 0 1 '+(dir>0?1:0)+' '+base.x.toFixed(2)+' '+base.y.toFixed(2)+'"/>'
     +'<path class="head" d="M '+tip.x.toFixed(2)+' '+tip.y.toFixed(2)
     +' L '+w1.x.toFixed(2)+' '+w1.y.toFixed(2)
     +' L '+w2.x.toFixed(2)+' '+w2.y.toFixed(2)+' Z"/>'+secondHead;
   svg.appendChild(g);
-  setTimeout(()=>{if(g.isConnected) clearHintVisuals();},1400);
+  if(!persistent)setTimeout(()=>{if(g.isConnected) clearHintVisuals();},1400);
 }
-$('hint').addEventListener('click',()=>{
+function showBestMoveHint(persistent=false){
   if(busy||isSolved()) return;
   const dist=SOLVER.dist, d=dist[enc(ori)];
   for(let ti=0;ti<TRI.length;ti++){
@@ -853,10 +880,25 @@ $('hint').addEventListener('click',()=>{
       if(dist[enc(next)]!==d-1) continue;
       const el=svg.querySelector('.pivot[data-tri="'+ti+'"]');
       el.classList.add('hi'); setTimeout(()=>el.classList.remove('hi'),1100);
-      showHintArrow(ti,dir);
+      showHintArrow(ti,dir,false,persistent);
       return;
     }
   }
+}
+function cancelTutorialHint(preserveSelection=false){
+  tutorialHintTimers.forEach(clearTimeout);
+  tutorialHintTimers=[];
+  clearHintVisuals(preserveSelection);
+}
+function scheduleStageOneTutorial(){
+  cancelTutorialHint();
+  tutorialHintTimers.push(setTimeout(()=>{
+    if(stageIndex===0&&!freeMode&&!customMode&&moves===0&&!busy)showBestMoveHint(true);
+  },450));
+}
+$('hint').addEventListener('click',()=>{
+  cancelTutorialHint();
+  showBestMoveHint();
 });
 
 function renderProgress(){
@@ -1011,6 +1053,22 @@ $('resetProgress').addEventListener('click',()=>{
 buildBoard();
 renderProgress();
 loadStage(0);
+
+if(document.documentElement.classList.contains('embed')&&window.parent!==window){
+  const reportEmbedHeight=()=>{
+    requestAnimationFrame(()=>{
+      window.parent.postMessage({
+        type:'wake7:height',
+        height:Math.ceil(document.documentElement.scrollHeight)
+      },location.origin==='null'?'*':location.origin);
+    });
+  };
+  if(window.ResizeObserver)new ResizeObserver(reportEmbedHeight).observe(document.body);
+  window.addEventListener('resize',reportEmbedHeight);
+  window.addEventListener('load',reportEmbedHeight);
+  if(document.fonts&&document.fonts.ready)document.fonts.ready.then(reportEmbedHeight);
+  reportEmbedHeight();
+}
 </script>
 </body>
 </html>
