@@ -181,6 +181,13 @@
   .pivot.hi .dot,.pivot.active .dot{
     opacity:1;filter:drop-shadow(0 0 5px rgba(201,165,78,.8))
   }
+  .grip-marker{
+    pointer-events:none;opacity:.76;
+    transition:opacity .1s ease;
+    filter:drop-shadow(0 1px 2px rgba(0,0,0,.32));
+  }
+  .grip-marker rect{fill:#62B8D2}
+  #board.selecting .grip-marker,#board.hinting .grip-marker,#board.celebrating .grip-marker{opacity:0}
   .hint-arrow{pointer-events:none;animation:hintArrow 1.35s ease both}
   .hint-arrow.tutorial{animation:none;opacity:1}
   .hint-arrow .arc{
@@ -554,6 +561,16 @@ function buildBoard(){
     g.setAttribute('class','pivot');
     g.dataset.tri=ti;
     g.innerHTML='<circle class="dot" cx="'+t.x.toFixed(2)+'" cy="'+t.y.toFixed(2)+'" r="4.5"/>';
+    svg.appendChild(g);
+  });
+  TRI.forEach(t=>{
+    const angle=Math.atan2(t.y-CELL[3].y,t.x-CELL[3].x)*180/Math.PI;
+    const q=angle*Math.PI/180,r=32;
+    const x=t.x+r*Math.cos(q),y=t.y+r*Math.sin(q);
+    const g=document.createElementNS(NS_,'g');
+    g.setAttribute('class','grip-marker');
+    g.setAttribute('transform','translate('+x.toFixed(2)+' '+y.toFixed(2)+') rotate('+angle.toFixed(2)+')');
+    g.innerHTML='<rect x="-13" y="-2.5" width="26" height="5" rx="2.5"/>';
     svg.appendChild(g);
   });
   baseTiles=tileEls.slice();
