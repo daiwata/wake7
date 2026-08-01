@@ -22,6 +22,8 @@
     color:var(--washi);font-family:"A1 Gothic","Hiragino Kaku Gothic ProN","Yu Gothic",YuGothic,"Noto Sans JP",sans-serif;
     min-height:100vh;padding:26px 12px max(12px,env(safe-area-inset-bottom));display:flex;flex-direction:column;align-items:center;
   }
+  body.mastered #board .tile.stand .hex{fill:#F6DE93;stroke:#C89C35}
+  body.mastered #board .tile.fallen .hex{fill:#D7B75F;stroke:#A67D28}
   .brand{position:relative;width:100%;max-width:372px;display:flex;flex-direction:column;align-items:center}
   .language-picker{position:absolute;z-index:20;top:0;right:0}
   .language-toggle{
@@ -600,9 +602,9 @@ const UI_TEXT={
     makerStatus:'ダルマをタップして向きを変更　現在の最短は{n}手',
     resetConfirm:'すべてのクリア記録をリセットしますか？',
     introTitle:'だるまさんを起こして！',introText:'くるりと3体をまわして、みんな起こそう。',introStart:'はじめる',
-    masterTitle:'はじめの15問 クリア！',masterText:'名人への道が開かれました。\n一の巻から四の巻まで、各15問。全60問の道のりです。',masterStart:'名人への道　一の巻へ →',
+    masterTitle:'はじめの15問 クリア！',masterText:'名人への道が開かれました。\n一の巻から四の巻まで、各15問。全60問の道のりです。\n制覇の先には、名人だけのささやかなご褒美も。',masterStart:'名人への道　一の巻へ →',
     volumeName:'{n}の巻',volumeClearTitle:'{n} クリア！',volumeClearText:'次の巻へ進めます。',volumeStart:'次の巻へ →',
-    masteryTitle:'名人への道 制覇！',masteryText:'全パターンを攻略しました。お見事。',masteryStart:'フリーモードへ →'
+    masteryTitle:'名人への道 制覇！',masteryText:'全パターンを攻略しました。\n金色の盤面テーマを手に入れました。',masteryStart:'フリーモードへ →'
     ,pathInfoTitle:'名人への道',pathInfoText:'一の巻から四の巻まで、各15問。全60問の道のりです。',pathInfoStart:'一の巻を始める →'
     ,breakthroughSeal:'突破',masterySeal:'名人'
     ,stageClear1:'水色の棒のあたりをタップしてスワイプすると、3体を回しやすいよ。',stageClear3:'次からは、最短2手の問題です。',stageClear12:'次からは、最短3手の問題です。'
@@ -629,9 +631,9 @@ const UI_TEXT={
     makerStatus:'Tap a daruma to change its direction · Best: {n} moves',
     resetConfirm:'Reset all cleared-puzzle progress?',
     introTitle:'Wake the Daruma!',introText:'Grab three daruma, then give them a turn.',introStart:'Start',
-    masterTitle:'First 15 puzzles complete!',masterText:'The Path to Mastery is now open.\nFour volumes of 15 puzzles await: 60 puzzles in all.',masterStart:'Path to Mastery →',
+    masterTitle:'First 15 puzzles complete!',masterText:'The Path to Mastery is now open.\nFour volumes of 15 puzzles await: 60 puzzles in all.\nA small reward awaits true masters.',masterStart:'Path to Mastery →',
     volumeName:'Volume {n}',volumeClearTitle:'{n} complete!',volumeClearText:'The next volume is ready.',volumeStart:'Next volume →',
-    masteryTitle:'Path to Mastery complete!',masteryText:'You solved every pattern. Brilliant!',masteryStart:'Go to Free Play →'
+    masteryTitle:'Path to Mastery complete!',masteryText:'You solved every pattern.\nThe golden board theme is now yours.',masteryStart:'Go to Free Play →'
     ,pathInfoTitle:'Path to Mastery',pathInfoText:'Four volumes of 15 puzzles await: 60 puzzles in all.',pathInfoStart:'Begin Volume 1 →'
     ,breakthroughSeal:'PASS',masterySeal:'MASTER'
     ,stageClear1:'Start your swipe near a blue handle to turn the three daruma more easily.',stageClear3:'From the next puzzle, the best solution takes two moves.',stageClear12:'From the next puzzle, the best solution takes three moves.'
@@ -657,9 +659,9 @@ const UI_TEXT={
     makerStatus:'点击不倒翁改变方向　目前最少需要{n}步',
     resetConfirm:'要重置所有通关记录吗？',
     introTitle:'叫醒不倒翁！',introText:'抓住三个不倒翁，轻轻转一圈。',introStart:'开始',
-    masterTitle:'最初15题完成！',masterText:'名人之路现已开启。\n共有四卷，每卷15题，总计60题。',masterStart:'进入名人之路 →',
+    masterTitle:'最初15题完成！',masterText:'名人之路现已开启。\n共有四卷，每卷15题，总计60题。\n真正的名人还有一份小小奖励。',masterStart:'进入名人之路 →',
     volumeName:'第 {n} 卷',volumeClearTitle:'{n}完成！',volumeClearText:'可以进入下一卷。',volumeStart:'下一卷 →',
-    masteryTitle:'名人之路制霸！',masteryText:'你已攻略全部图案。太棒了！',masteryStart:'进入自由模式 →'
+    masteryTitle:'名人之路制霸！',masteryText:'你已攻略全部图案。\n已获得金色棋盘主题。',masteryStart:'进入自由模式 →'
     ,pathInfoTitle:'名人之路',pathInfoText:'共有四卷，每卷15题，总计60题。',pathInfoStart:'开始第一卷 →'
     ,breakthroughSeal:'突破',masterySeal:'名人'
     ,stageClear1:'从浅蓝色短条附近开始滑动，会更容易转动三个不倒翁。',stageClear3:'从下一题开始，最少需要两步。',stageClear12:'从下一题开始，最少需要三步。'
@@ -685,9 +687,9 @@ const UI_TEXT={
     makerStatus:'다루마를 눌러 방향 변경　현재 최단 {n}수',
     resetConfirm:'모든 클리어 기록을 초기화할까요?',
     introTitle:'다루마를 깨워라!',introText:'다루마 세 개를 잡고 빙글 돌려 보세요.',introStart:'시작',
-    masterTitle:'처음 15문제 완료!',masterText:'명인의 길이 열렸습니다.\n1권부터 4권까지, 각 15문제. 모두 60문제입니다.',masterStart:'명인의 길로 →',
+    masterTitle:'처음 15문제 완료!',masterText:'명인의 길이 열렸습니다.\n1권부터 4권까지, 각 15문제. 모두 60문제입니다.\n명인만을 위한 작은 보상도 기다립니다.',masterStart:'명인의 길로 →',
     volumeName:'{n}권',volumeClearTitle:'{n} 완료!',volumeClearText:'다음 권으로 갈 수 있습니다.',volumeStart:'다음 권으로 →',
-    masteryTitle:'명인의 길 제패!',masteryText:'모든 패턴을 풀었습니다. 훌륭해요!',masteryStart:'자유 모드로 →'
+    masteryTitle:'명인의 길 제패!',masteryText:'모든 패턴을 풀었습니다.\n황금 보드 테마를 얻었습니다.',masteryStart:'자유 모드로 →'
     ,pathInfoTitle:'명인의 길',pathInfoText:'1권부터 4권까지, 각 15문제. 모두 60문제입니다.',pathInfoStart:'1권 시작 →'
     ,breakthroughSeal:'돌파',masterySeal:'명인'
     ,stageClear1:'하늘색 막대 근처에서 스와이프하면 세 다루마를 더 쉽게 돌릴 수 있어요.',stageClear3:'다음 문제부터는 최단 2수 문제입니다.',stageClear12:'다음 문제부터는 최단 3수 문제입니다.'
@@ -717,6 +719,8 @@ let clearedStages=new Set();
 try{clearedStages=new Set(JSON.parse(localStorage.getItem('wake7-cleared')||'[]'));}catch(_){}
 let clearedExtraStages=new Set();
 try{clearedExtraStages=new Set(JSON.parse(localStorage.getItem('wake7-extra-cleared')||'[]'));}catch(_){}
+const isMastered=()=>EXTRA_STAGES.every((_,i)=>clearedExtraStages.has(i));
+function updateMasterTheme(){document.body.classList.toggle('mastered',isMastered());}
 const mod3=v=>((v%3)+3)%3;
 const isSolved=()=>SOLVER.dist[enc(ori)]===0;
 let displayedMoves=null,displayedRemaining=null;
@@ -858,6 +862,7 @@ function paint(){
     if(extraMode){
       clearedExtraStages.add(extraIndex);
       try{localStorage.setItem('wake7-extra-cleared',JSON.stringify([...clearedExtraStages]));}catch(_){}
+      updateMasterTheme();
       renderProgress();
     }else if(!freeMode&&!customMode){
       clearedStages.add(stageIndex);
@@ -1643,6 +1648,7 @@ function debugUnlockExtra(count){
   if(!DEBUG_MODE)return;
   for(let i=0;i<count;i++)clearedExtraStages.add(i);
   try{localStorage.setItem('wake7-extra-cleared',JSON.stringify([...clearedExtraStages]));}catch(_){}
+  updateMasterTheme();
   renderProgress();
   renderStageNav();
 }
@@ -1854,10 +1860,12 @@ $('resetProgress').addEventListener('click',()=>{
   clearedStages.clear();
   clearedExtraStages.clear();
   try{localStorage.removeItem('wake7-cleared');localStorage.removeItem('wake7-extra-cleared');localStorage.removeItem('wake7-intro-seen');}catch(_){}
+  updateMasterTheme();
   loadStage(0);
 });
 
 buildBoard();
+updateMasterTheme();
 renderProgress();
 loadStage(0);
 applyLanguage('ja');
