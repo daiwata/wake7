@@ -159,7 +159,7 @@
   .quiz-option{min-height:42px;padding:7px 9px;border:1px solid rgba(185,232,242,.24);border-radius:7px;background:rgba(255,255,255,.035);color:#D4E6EC;font:600 12px/1.35 inherit;text-align:left;cursor:pointer}
   .quiz-option:disabled{cursor:default}.quiz-option.correct{border-color:#56C7A2;background:rgba(86,199,162,.16);color:#D9F6E9}.quiz-option.wrong{border-color:#DF6C61;background:rgba(223,108,97,.13);color:#F2C2BE}
   .quiz-note{min-height:42px;margin:12px 0 0;color:#B9E8F2;font-size:12px;line-height:1.6;text-align:left}
-  #clearDialogText:not([hidden]){margin:15px 0 0;padding:9px 11px;border-radius:4px;background:rgba(98,184,210,.1);color:#B9E8F2;font-size:13px;font-weight:600;line-height:1.65;text-align:left}
+  #clearDialogText:not([hidden]){margin:15px 0 0;padding:9px 11px;border-radius:4px;background:rgba(98,184,210,.1);color:#B9E8F2;font-size:13px;font-weight:600;line-height:1.65;text-align:left;white-space:pre-line}
   .clear-tip-link{display:block;margin:8px auto 0;padding:0;border:0;background:none;color:#C9A54E;font:700 12px inherit;text-decoration:underline;text-underline-offset:3px;cursor:pointer}
   .clear-tip-link[hidden]{display:none}
   .clear-tip-illustration{width:100%;height:108px;margin:14px 0 -4px;display:grid;place-items:center;overflow:hidden}
@@ -663,17 +663,59 @@ function canonicalState(state){
   for(const symmetry of SYMMETRIES)canonical=Math.min(canonical,transformStateBySymmetry(state,symmetry));
   return canonical;
 }
-const PRIMARY_THREE_MOVE_CLASSES=new Set(STAGES.filter(stage=>stage.par===3).map(stage=>canonicalState(stage.state)));
-const EXTRA_STAGES=[];
-for(const par of [3,4]){
+function progressOptionCounts(stage){
+  let progress=0,worse=0;
+  const board=dec(stage.state);
+  for(let ti=0;ti<TRI.length;ti++)for(const dir of [1,-1]){
+    const next=SOLVER.dist[enc(rollOnce(board,ti,dir))];
+    if(next<stage.par)progress++;
+    else if(next>stage.par)worse++;
+  }
+  return {progress,worse};
+}
+function fourMoveEase(stage){
+  let progress=0,followup=0;
+  const board=dec(stage.state);
+  for(let ti=0;ti<TRI.length;ti++)for(const dir of [1,-1]){
+    const nextState=enc(rollOnce(board,ti,dir));
+    if(SOLVER.dist[nextState]===3){
+      progress++;
+      followup+=progressOptionCounts({state:nextState,par:3}).progress;
+    }
+  }
+  return {progress,followup};
+}
+const ALL_THREE_MOVE_STAGES=[];
+{
   const seen=new Set();
-  for(const state of SOLVER.byDepth[par]){
+  for(const state of SOLVER.byDepth[3]){
     const canonical=canonicalState(state);
-    if(seen.has(canonical)||(par===3&&PRIMARY_THREE_MOVE_CLASSES.has(canonical)))continue;
+    if(seen.has(canonical))continue;
     seen.add(canonical);
-    EXTRA_STAGES.push({state:canonical,par});
+    ALL_THREE_MOVE_STAGES.push({state:canonical,par:3});
   }
 }
+ALL_THREE_MOVE_STAGES.sort((a,b)=>{
+  const ae=progressOptionCounts(a),be=progressOptionCounts(b);
+  return be.progress-ae.progress||ae.worse-be.worse;
+});
+STAGES.splice(12,3,...ALL_THREE_MOVE_STAGES.slice(0,3));
+const EXTRA_STAGES=[...ALL_THREE_MOVE_STAGES.slice(3)];
+const FOUR_MOVE_STAGES=[];
+{
+  const seen=new Set();
+  for(const state of SOLVER.byDepth[4]){
+    const canonical=canonicalState(state);
+    if(seen.has(canonical))continue;
+    seen.add(canonical);
+    FOUR_MOVE_STAGES.push({state:canonical,par:4});
+  }
+}
+FOUR_MOVE_STAGES.sort((a,b)=>{
+  const ae=fourMoveEase(a),be=fourMoveEase(b);
+  return be.progress-ae.progress||be.followup-ae.followup;
+});
+EXTRA_STAGES.push(...FOUR_MOVE_STAGES);
 let currentLang='ja';
 const UI_TEXT={
   ja:{
@@ -1276,10 +1318,10 @@ function restoreCurrentStage(){
 function startFree(){
   savedFreeSession=null;
   extraMode=false;freeMode=true;customMode=false;editingBoard=false;
-  const pool=SOLVER.byDepth[4];
+  const pool=[...SOLVER.byDepth[2],...SOLVER.byDepth[3],...SOLVER.byDepth[4]];
   let state=pool[(Math.random()*pool.length)|0];
   if(pool.length>1)while(state===currentInitialState)state=pool[(Math.random()*pool.length)|0];
-  setPosition(state,4);
+  setPosition(state,SOLVER.dist[state]);
   renderStageNav();
 }
 function startFreeFromState(state){
