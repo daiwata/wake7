@@ -48,10 +48,10 @@
   .menu-divider{height:1px;margin:3px 7px;background:rgba(255,255,255,.12)}
   .language-picker{position:absolute;z-index:20;top:26px;right:0}
   .language-toggle{
-    display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid rgba(255,255,255,.14);
-    border-radius:50%;background:rgba(22,40,60,.72);color:#9FB0C4;font-size:17px;cursor:pointer;
+    display:grid;place-items:center;width:30px;height:30px;padding:0;border:0;
+    background:transparent;color:#9FB0C4;font-size:24px;line-height:1;cursor:pointer;
   }
-  .language-toggle:hover,.language-toggle[aria-expanded="true"]{border-color:#62B8D2;color:#62B8D2}
+  .language-toggle:hover,.language-toggle[aria-expanded="true"]{opacity:.78}
   .language-toggle:focus-visible{outline:2px solid var(--washi);outline-offset:2px}
   .language-menu{
     position:absolute;top:calc(100% + 7px);right:0;display:none;width:150px;padding:5px;
@@ -119,13 +119,13 @@
   html[lang="en"] .stage-picker-trigger.master-stage #stageNumber{font-size:13px;letter-spacing:-.07em;white-space:nowrap}
   .progress{
     width:100%;max-width:372px;display:grid;grid-template-columns:repeat(15,1fr);
-    gap:5px;margin:12px 0 2px;
+    gap:5px;margin:15px 0 6px;
   }
   .primary-total{position:relative;top:5px;display:flex;justify-content:flex-end;gap:9px;width:100%;max-width:372px;height:0;margin:0;color:#8295AA;font-size:11px;line-height:14px;letter-spacing:.08em;pointer-events:none}
   .primary-total-kind{color:inherit;font-weight:400}
   .primary-total[hidden]{display:none}
   .progress button{
-    height:6px;border:0;border-radius:999px;background:rgba(255,255,255,.13);
+    height:8px;border:0;border-radius:999px;background:rgba(255,255,255,.13);
     cursor:pointer;transition:.18s;padding:0;
   }
   .progress button.cleared{background:rgba(201,165,78,.55)}
@@ -133,15 +133,16 @@
   .progress button.extra-lap-1{background:#9A86D6}
   .progress button.extra-lap-2{background:#72BF9A}
   .progress button.extra-lap-3{background:#D4899A}
-  .progress button.cleared.extra-lap-0{box-shadow:inset 0 -2px 0 var(--kin)}
-  .progress button.cleared.extra-lap-1{box-shadow:inset 0 -2px 0 var(--kin)}
-  .progress button.cleared.extra-lap-2{box-shadow:inset 0 -2px 0 var(--kin)}
-  .progress button.cleared.extra-lap-3{box-shadow:inset 0 -2px 0 var(--kin)}
   .progress button.current{box-shadow:0 0 0 2px var(--kin)}
-  .progress button.cleared.extra-lap-0.current,.progress button.cleared.extra-lap-1.current,.progress button.cleared.extra-lap-2.current,.progress button.cleared.extra-lap-3.current{box-shadow:inset 0 -2px 0 var(--kin),0 0 0 2px var(--kin)}
+  .progress button.cleared.extra-lap-0.current,.progress button.cleared.extra-lap-1.current,.progress button.cleared.extra-lap-2.current,.progress button.cleared.extra-lap-3.current{box-shadow:0 0 0 2px var(--kin)}
   .progress button:disabled{
     background:rgba(255,255,255,.1);box-shadow:none;cursor:default;
   }
+  .progress button.cleared:disabled{background:rgba(201,165,78,.55)}
+  .progress button.extra-lap-0:disabled{background:#62B8D2}
+  .progress button.extra-lap-1:disabled{background:#9A86D6}
+  .progress button.extra-lap-2:disabled{background:#72BF9A}
+  .progress button.extra-lap-3:disabled{background:#D4899A}
   .progress button:focus-visible{outline:2px solid var(--washi);outline-offset:3px}
   .stage-picker-backdrop{
     position:fixed;z-index:60;inset:0;display:grid;place-items:center;padding:18px;
@@ -324,7 +325,7 @@
     100%{transform:scale(1);text-shadow:0 0 10px rgba(98,184,210,.24)}
   }
   .play-actions{width:100%;display:flex;gap:5px;margin-left:auto}
-  .play-actions .chip{flex:1;white-space:nowrap;padding:8px 5px;font-size:11px}
+  .play-actions .chip{flex:1;white-space:nowrap;padding:8px 5px;font-size:13px}
   .play-actions .chip:disabled{background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.07);color:#536276;opacity:.52;cursor:not-allowed}
   .debug-tools{width:100%;max-width:372px;display:flex;justify-content:center;gap:5px;margin-top:14px}
   .debug-tools .chip{padding:5px 8px;font-size:10px;opacity:.7}
@@ -340,7 +341,7 @@
   }
   .view-button{
     pointer-events:auto;padding:5px 4px;border:0;background:rgba(22,40,60,.72);
-    color:#718297;font:inherit;font-size:10px;border-radius:4px;cursor:pointer;
+    color:#718297;font:inherit;font-size:12px;border-radius:4px;cursor:pointer;
     transition:color .18s,background .18s;
   }
   .view-button:hover{color:#A8B6C7;background:rgba(22,40,60,.9)}
@@ -1347,6 +1348,7 @@ let stageIndex=0,extraIndex=0,extraMode=false,freeMode=false,clearShown=false,cl
 let lastStageMode={extra:false,index:0};
 let customMode=false,editingBoard=false;
 let masterDialogKind='primary';
+let rankDialogReturn=null;
 let tutorialHintTimers=[];
 let makerButtonBlockedUntil=0,makerRevealTimer=0;
 let currentInitialState=0, currentInitialPar=0;
@@ -2251,7 +2253,8 @@ function renderRankList(){
     condition.append(path,clear);row.append(title,condition);list.appendChild(row);
   });
 }
-function openRankDialog(){
+function openRankDialog(returnTarget=null){
+  rankDialogReturn=returnTarget;
   renderRankList();
   $('rankDialog').hidden=false;
   $('closeRankDialog').focus();
@@ -2260,7 +2263,7 @@ function openRankDialogFrom(dialogId,sealId){
   const seal=$(sealId);
   if(!seal.classList.contains('rank-seal'))return;
   $(dialogId).hidden=true;
-  openRankDialog();
+  openRankDialog({dialogId,sealId});
 }
 const primaryStageUnlocked=index=>index===0||clearedStages.has(index)||clearedStages.has(index-1);
 const extraStageUnlocked=index=>index===0||clearedExtraStages.has(index)||clearedExtraStages.has(index-1);
@@ -2311,6 +2314,7 @@ function openStagePicker(){
   $('stagePicker').hidden=false;
 }
 function openStagePickerForRank(rankIndex){
+  rankDialogReturn=null;
   $('rankDialog').hidden=true;
   pickerRound=rankIndex===0?-1:rankIndex-1;
   renderStagePicker();
@@ -3173,7 +3177,14 @@ for(const [sealId,dialogId] of [['masterSeal','masterDialog'],['messageMasterSea
     if(event.key==='Enter'||event.key===' '){event.preventDefault();openRankDialogFrom(dialogId,sealId);}
   });
 }
-$('closeRankDialog').addEventListener('click',()=>{$('rankDialog').hidden=true;$('rankBadge').focus();});
+$('closeRankDialog').addEventListener('click',()=>{
+  const returnTarget=rankDialogReturn;rankDialogReturn=null;
+  $('rankDialog').hidden=true;
+  if(returnTarget){
+    $(returnTarget.dialogId).hidden=false;
+    $(returnTarget.sealId).focus();
+  }else $('rankBadge').focus();
+});
 $('masterStart').addEventListener('click',()=>{
   hideGameDialogs();
   if(masterDialogKind==='primary'||masterDialogKind==='pathInfo')loadExtraStage(0);
