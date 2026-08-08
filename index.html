@@ -421,7 +421,9 @@
     padding:0 6px;font-size:clamp(10px,2.8vw,11.5px);
     line-height:1.45;white-space:normal;
   }
-  .foot{margin-top:18px;font-size:12.5px;color:#7E8FA3;max-width:30em;text-align:center;line-height:1.9}
+  .site-credit{margin:8px 0 2px;font-size:10px;letter-spacing:.06em;color:#7E8FA3;text-align:center;line-height:1.4}
+  .site-credit a{color:inherit;text-decoration:none;border-bottom:1px solid color-mix(in srgb,currentColor 45%,transparent)}
+  .site-credit a:hover{color:var(--kin);border-bottom-color:currentColor}
   @media (prefers-reduced-motion:reduce){
     .tile,.pivot{transition:none}
     .status-metric.moves b.pulse{animation:none}
@@ -442,6 +444,7 @@
   }
   html.embed h1{margin-top:5px}
   html.embed .stage-nav{margin-top:12px}
+  html.embed .site-credit{display:none}
 </style>
 </head>
 <body>
@@ -510,6 +513,7 @@
 </div>
 
 <p class="msg" id="msg"></p>
+<footer class="site-credit">© 2026 WAKE SEVEN <span aria-hidden="true">·</span> <a href="https://daiwata.github.io/" target="_blank" rel="noopener">daiary</a></footer>
 <div class="debug-tools" id="debugTools" hidden>
   <button class="chip" id="debugClear" hidden>即</button>
   <button class="chip" id="debugAlmost" hidden>+1</button>
