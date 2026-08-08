@@ -781,24 +781,26 @@ const STAGES=[
   { state:1006, par:3 }
 ];
 const TWO_MOVE_STAGES=STAGES.filter(stage=>stage.par===2);
+// 名人への道の「巻・問題番号」から、内部の通し番号（0始まり）を作る。
+const masterStage=(volume,question)=>(volume-1)*STAGES.length+(question-1);
 // 覚えやすい順。番号は TWO_MOVE_STAGES 内での元の並び順（1 始まり）。
 const TWO_MOVE_PATTERN_ORDER=[7,6,5,4,3,8,0,2,1];
 const TWO_MOVE_PATTERN_POSITION=Object.fromEntries(TWO_MOVE_PATTERN_ORDER.map((pattern,position)=>[pattern,position+1]));
 const CLEAR_TWO_MOVE_CARDS={
-  4:7,
-  7:6,
-  9:5,
-  16:4,
-  19:3,
-  21:8,
-  27:0,
-  31:2,
-  33:1
+  [masterStage(1,5)]:7,
+  [masterStage(1,8)]:6,
+  [masterStage(1,10)]:5,
+  [masterStage(2,2)]:4,
+  [masterStage(2,5)]:3,
+  [masterStage(2,7)]:8,
+  [masterStage(2,13)]:0,
+  [masterStage(3,2)]:2,
+  [masterStage(3,4)]:1
 };
 const CLEAR_GUIDE_CARDS={
-  23:{ state:[2,0,0,0,1,0,0], text:'guideCardOuter', page:0 },
-  37:{ state:[1,1,1,0,1,1,1], text:'guideCardCenter', page:2 },
-  52:{ state:[0,2,2,1,0,0,1], text:'guideCardAlternate', page:1 }
+  [masterStage(2,9)]:{ state:[2,0,0,0,1,0,0], text:'guideCardOuter', page:0 },
+  [masterStage(3,8)]:{ state:[1,1,1,0,1,1,1], text:'guideCardCenter', page:2 },
+  [masterStage(4,8)]:{ state:[0,2,2,1,0,0,1], text:'guideCardAlternate', page:1 }
 };
 const PRIMARY_CLEAR_TIPS={
   // 入門
@@ -821,45 +823,44 @@ const PRIMARY_CLEAR_TIPS={
 };
 const EXTRA_CLEAR_TIPS={
   // 名人への道・序
-  0:'stageClear6',
-  1:'extraClear2',
-  2:'extraClear3',
-  3:'extraClearRankCollection',
-  5:'extraClear6',
-  6:'extraClear7',
-  8:'extraClearMessageReview',
-  10:'stageClear9',
-  12:'extraAdviceTwoMove',
-  13:'extraClear54',
+  [masterStage(1,1)]:'stageClear6',
+  [masterStage(1,2)]:'extraClear2',
+  [masterStage(1,3)]:'extraClear3',
+  [masterStage(1,4)]:'extraClearRankCollection',
+  [masterStage(1,6)]:'extraClear6',
+  [masterStage(1,7)]:'extraClear7',
+  [masterStage(1,9)]:'extraClearMessageReview',
+  [masterStage(1,11)]:'stageClear9',
+  [masterStage(1,13)]:'extraAdviceTwoMove',
+  [masterStage(1,14)]:'extraClear54',
   // 名人への道・破
-  15:'extraClear25',
-  18:'extraAdviceImagine',
-  22:'extraClear23',
-  25:'extraAdviceSeparate',
-  26:'extraAdviceTurn',
+  [masterStage(2,1)]:'extraClear25',
+  [masterStage(2,4)]:'extraAdviceImagine',
+  [masterStage(2,8)]:'extraClear23',
+  [masterStage(2,11)]:'extraAdviceSeparate',
+  [masterStage(2,12)]:'masterPatternCount',
   // 名人への道・離
-  30:'extraClear30',
-  31:'extraClear4',
-  32:'extraClear33',
-  34:'extraClear35',
-  35:'extraClear36',
-  36:'extraAdviceFourToThree',
-  39:'extraAdviceAdvance',
-  40:'extraClear41',
-  41:'extraAdviceNearTwo',
-  42:'extraClear43',
+  [masterStage(3,1)]:'extraClear30',
+  [masterStage(3,3)]:'extraClear33',
+  [masterStage(3,5)]:'extraClear35',
+  [masterStage(3,6)]:'masterNextFourMoves',
+  [masterStage(3,7)]:'extraAdviceFourToThree',
+  [masterStage(3,10)]:'extraAdviceAdvance',
+  [masterStage(3,11)]:'extraClear41',
+  [masterStage(3,12)]:'extraAdviceNearTwo',
+  [masterStage(3,13)]:'extraClear43',
   // 名人への道・極
-  45:'extraClear18',
-  46:'extraClear47',
-  47:'extraClear48',
-  48:'extraClear49',
-  50:'extraAdviceInnerEye',
-  51:'extraFourthOneCheck',
-  53:'extraClear53',
-  54:'extraClearResetProgress',
-  56:'extraFourthNoCheck',
-  57:'extraClear56',
-  58:'extraFinalNotice'
+  [masterStage(4,1)]:'extraClear18',
+  [masterStage(4,2)]:'extraClear47',
+  [masterStage(4,3)]:'extraClear48',
+  [masterStage(4,4)]:'extraClear49',
+  [masterStage(4,6)]:'extraAdviceInnerEye',
+  [masterStage(4,7)]:'extraFourthOneCheck',
+  [masterStage(4,9)]:'extraClear53',
+  [masterStage(4,10)]:'extraClearResetProgress',
+  [masterStage(4,12)]:'extraFourthNoCheck',
+  [masterStage(4,13)]:'extraClear56',
+  [masterStage(4,14)]:'extraFinalNotice'
 };
 const PRIMARY_CLEAR_ARTS={
   0:'introGuide',
@@ -873,22 +874,22 @@ const PRIMARY_CLEAR_ARTS={
   12:'monaka'
 };
 const EXTRA_CLEAR_ARTS={
-  0:'rise',
-  1:'count',
-  3:'rankBadgeArt',
-  5:'chants',
-  10:'eyes',
-  13:'fuku',
-  15:'legend',
-  22:'pigment',
-  30:'unwritten',
-  32:'moveGraph',
-  34:'paper',
-  40:'market',
-  42:'crane',
-  45:'dharma',
-  53:'shelfFall',
-  57:'darumaOtoshi'
+  [masterStage(1,1)]:'rise',
+  [masterStage(1,2)]:'count',
+  [masterStage(1,4)]:'rankBadgeArt',
+  [masterStage(1,6)]:'chants',
+  [masterStage(1,11)]:'eyes',
+  [masterStage(1,14)]:'fuku',
+  [masterStage(2,1)]:'legend',
+  [masterStage(2,8)]:'pigment',
+  [masterStage(3,1)]:'unwritten',
+  [masterStage(3,3)]:'moveGraph',
+  [masterStage(3,5)]:'paper',
+  [masterStage(3,11)]:'market',
+  [masterStage(3,13)]:'crane',
+  [masterStage(4,1)]:'dharma',
+  [masterStage(4,9)]:'shelfFall',
+  [masterStage(4,13)]:'darumaOtoshi'
 };
 const SYMMETRIES=Array.from({length:6},(_,k)=>[
   {permutation:makeBoardPermutation(k*60),flip:false},
@@ -1110,7 +1111,7 @@ Object.assign(UI_TEXT.ja,{
   extraClear7:'名人への道の終盤では、残り最短手数が表示されません。最短2手の盤面を見分ける感覚を、今のうちに身につけておこう。',
   extraClear9:'全ての最短4手盤面で、6本の軸をランダムに選び、最短3手になる向きへ回すと、約78％で最短3手になります。',
   extraClear33:'最短3手の盤面で、12通りの回し方をランダムに選ぶと、最短2手になるのは約17％、そのまま最短3手は約56％、最短4手になるのは約27％です。',
-  extraClear36:'次からは、最短4手の問題です。',
+  masterNextFourMoves:'次からは、最短4手の問題です。',
   extraClear46:'メニューの「最短2手の盤面を見る」から、9種類の盤面を一覧で見られます。',
   extraClear47:'一覧の「左右反転」「60°回転」で向きを変えると、同じ盤面かどうかを確かめられます。',
   extraClear48:'メニューの「攻略のコツ」では、特徴的な形を図解で見られます。',extraClear49:'メニューの「最短2手の盤面」と「攻略のコツ」では、盤面をスワイプするとゲーム中の盤面と並べて見比べられます。',
@@ -1122,7 +1123,7 @@ Object.assign(UI_TEXT.ja,{
   stageClearChallenge2:'突破まであと一歩！\nメニューから、フリーモードや盤面を自分でつくるモードでも遊べます。',
   stageClear8:'「ヒント」ボタンを押すと、次の最善手が青い矢印で表示されます。',
   stageClear10:'一度クリアした問題は、「← 前へ」「次へ →」と、その真ん中にあるボタンでいつでも戻れます。\n金色のゲージをタップして選ぶこともできます。',
-  extraClear4:'盤面は全部で73パターン\n最短1手：1パターン／最短2手：9パターン／\n最短3手：39パターン／最短4手：24パターン\nこのステージで全パターンを遊べます',
+  masterPatternCount:'盤面は全部で73パターン\n最短1手：1パターン／最短2手：9パターン／\n最短3手：39パターン／最短4手：24パターン\nこのステージで全パターンを遊べます',
   twoMoveDiscovery:'最短2手の盤面　{n} / 9\nこの形と向きを、そのまま覚えておこう。',detailsLink:'詳しい解説はこちら →',backToClear:'戻る',guideCardSmall:'4体立ち：寝ダルマの小三角は最短1手',guideCardOuter:'5体立ち：寝た2体が外周で離れていれば最短3手',guideCardCenter:'6体寝て、中央だけ立っている形は最短4手',guideCardAlternate:'外周に1つおきに3体立っている形は最短3手'
 });
 Object.assign(UI_TEXT.en,{
@@ -1132,7 +1133,7 @@ Object.assign(UI_TEXT.en,{
   extraClear7:'Volume 4 does not show moves left. Start building an eye for two-move boards now.',
   extraClear9:'Across all four-move boards, choose one of the six axes at random, then turn in the better direction: about 78% reach a three-move board.',
   extraClear33:'From a three-move board, a random choice among 12 turns reaches a two-move board about 17% of the time, stays at three moves about 56%, and goes to four moves about 27%.',
-  extraClear36:'From the next puzzle, the best solution takes four moves.',
+  masterNextFourMoves:'From the next puzzle, the best solution takes four moves.',
   extraClear46:'Open “View 2-move boards” from the Menu to see all nine patterns at once.',
   extraClear47:'Use Mirror and Rotate 60° in the list to check whether boards are the same pattern.',
   extraClear48:'Open “Quick tips” from the Menu to see illustrated characteristic shapes.',extraClear49:'In “2-move boards” and “Quick tips” in the Menu, swipe a board to compare it side by side with the game board.',
@@ -1144,7 +1145,7 @@ Object.assign(UI_TEXT.en,{
   stageClearChallenge2:'Just one more step to a breakthrough!\nThe Menu also has Free Play and a mode for making your own board.',
   stageClear8:'Tap Hint to show the next best move with a blue arrow.',
   stageClear10:'Use Previous and Next to revisit cleared puzzles at any time.\nYou can also tap the gold progress bar to choose one.',
-  extraClear4:'There are 73 board patterns in all.\n1 takes one move, 9 take two, 39 take three, and 24 take four.\nPatterns equivalent through rotation or reflection are counted as one.\nTogether, the first 15 puzzles and Path to Mastery let you play every pattern.',
+  masterPatternCount:'There are 73 board patterns in all.\n1 takes one move, 9 take two, 39 take three, and 24 take four.\nPatterns equivalent through rotation or reflection are counted as one.\nTogether, the first 15 puzzles and Path to Mastery let you play every pattern.',
   twoMoveDiscovery:'Two-move board {n} / 9\nRemember this exact shape and orientation.',detailsLink:'See the full explanation →',backToClear:'Back',guideCardSmall:'Four standing: the small triangle of fallen daruma takes one move.',guideCardOuter:'Five standing: two fallen daruma separated on the outer ring take three moves.',guideCardCenter:'Six fallen, with only the center standing: four moves.',guideCardAlternate:'Three standing at every other outer position: three moves.'
 });
 Object.assign(UI_TEXT.zh,{
@@ -1154,7 +1155,7 @@ Object.assign(UI_TEXT.zh,{
   extraClear7:'第四卷不会显示剩余最少步数。现在就开始培养识别最少2步棋盘的感觉吧。',
   extraClear9:'在所有最少4步的棋盘中，随机选择6条轴之一，再朝能变为最少3步的方向转动，约78％会变为最少3步。',
   extraClear33:'在最少3步的棋盘中，随机选择12种转法之一，约17％会变为最少2步，约56％仍为最少3步，约27％会变为最少4步。',
-  extraClear36:'从下一题开始，最少需要四步。',
+  masterNextFourMoves:'从下一题开始，最少需要四步。',
   extraClear46:'从菜单打开“查看最少2步棋盘”，即可一次查看全部9种图案。',
   extraClear47:'在列表中使用“左右翻转”和“旋转60°”，可以确认棋盘是否是同一种图案。',
   extraClear48:'菜单的“攻略提示”中可以查看具有代表性的形状图解。',extraClear49:'在菜单的“最少2步棋盘”和“攻略提示”中，滑动棋盘可与游戏中的棋盘并排比较。',
@@ -1166,7 +1167,7 @@ Object.assign(UI_TEXT.zh,{
   stageClearChallenge2:'距离突破只差一步！\n菜单中还有自由模式和自己制作棋盘的模式。',
   stageClear8:'点击“提示”，蓝色箭头会显示下一步最佳走法。',
   stageClear10:'已通过的关卡可随时用“上一题”和“下一题”返回。\n也可以点击金色进度条来选择。',
-  extraClear4:'棋盘一共有73种图案。\n最少1步：1种／2步：9种／3步：39种／4步：24种。\n旋转或左右翻转后相同的图案，按一种计算。\n最初15题和名人之路合在一起，可以玩到全部图案。',
+  masterPatternCount:'棋盘一共有73种图案。\n最少1步：1种／2步：9种／3步：39种／4步：24种。\n旋转或左右翻转后相同的图案，按一种计算。\n最初15题和名人之路合在一起，可以玩到全部图案。',
   twoMoveDiscovery:'最少2步棋盘 {n} / 9\n记住这个形状和朝向。',detailsLink:'查看详细说明 →',backToClear:'返回',guideCardSmall:'4个站立：倒下小三角形最少1步。',guideCardOuter:'5个站立：两只倒下的不倒翁在外圈分开时最少3步。',guideCardCenter:'6个倒下、只有中央站立时最少4步。',guideCardAlternate:'外圈每隔一个站立3个时最少3步。'
 });
 Object.assign(UI_TEXT.ko,{
@@ -1176,7 +1177,7 @@ Object.assign(UI_TEXT.ko,{
   extraClear7:'4권에서는 남은 최단 수가 표시되지 않습니다. 지금부터 최단 2수 보드를 알아보는 감각을 길러 보세요.',
   extraClear9:'모든 최단 4수 보드에서 6개 축 중 하나를 무작위로 고르고, 최단 3수가 되는 방향으로 돌리면 약 78％가 최단 3수가 됩니다.',
   extraClear33:'최단 3수 보드에서 12가지 회전 중 하나를 무작위로 고르면 약 17％는 최단 2수, 약 56％는 그대로 최단 3수, 약 27％는 최단 4수가 됩니다.',
-  extraClear36:'다음 문제부터는 최단 4수 문제입니다.',
+  masterNextFourMoves:'다음 문제부터는 최단 4수 문제입니다.',
   extraClear46:'메뉴의 “최단 2수 보드 보기”에서 9가지 패턴을 한눈에 볼 수 있어요.',
   extraClear47:'목록의 좌우 반전과 60° 회전으로 같은 보드 패턴인지 확인할 수 있어요.',
   extraClear48:'메뉴의 “공략 팁”에서 특징적인 모양을 그림으로 볼 수 있어요.',extraClear49:'메뉴의 “최단 2수 보드”와 “공략 팁”에서는 보드를 스와이프해 게임 보드와 나란히 비교할 수 있어요.',
@@ -1188,7 +1189,7 @@ Object.assign(UI_TEXT.ko,{
   stageClearChallenge2:'돌파까지 이제 한 걸음!\n메뉴에는 자유 모드와 직접 보드를 만드는 모드도 있어요.',
   stageClear8:'힌트를 누르면 다음 최선의 수가 파란 화살표로 표시됩니다.',
   stageClear10:'성공한 문제는 이전과 다음으로 언제든 다시 갈 수 있어요.\n금색 진행 막대를 눌러 선택할 수도 있어요.',
-  extraClear4:'보드 패턴은 모두 73가지예요.\n최단 1수: 1가지／2수: 9가지／3수: 39가지／4수: 24가지.\n회전이나 좌우 반전으로 같은 패턴은 하나로 셉니다.\n처음 15문제와 명인의 길을 합치면 모든 패턴을 플레이할 수 있어요.',
+  masterPatternCount:'보드 패턴은 모두 73가지예요.\n최단 1수: 1가지／2수: 9가지／3수: 39가지／4수: 24가지.\n회전이나 좌우 반전으로 같은 패턴은 하나로 셉니다.\n처음 15문제와 명인의 길을 합치면 모든 패턴을 플레이할 수 있어요.',
   twoMoveDiscovery:'최단 2수 보드 {n} / 9\n이 모양과 방향을 그대로 기억해 보세요.',detailsLink:'자세한 설명 보기 →',backToClear:'돌아가기',guideCardSmall:'4개가 서 있을 때: 누운 다루마의 작은 삼각형은 최단 1수예요.',guideCardOuter:'5개가 서 있을 때: 바깥쪽에서 떨어진 두 누운 다루마는 최단 3수예요.',guideCardCenter:'6개가 누워 있고 중앙만 서 있으면 최단 4수예요.',guideCardAlternate:'바깥쪽에 하나씩 건너 3개가 서 있으면 최단 3수예요.'
 });
 Object.assign(UI_TEXT.ja,{extraClear50:'だるまは縁起物なので、お菓子もいろんな種類があります。特に「だるま最中」が定番ですね。'});
@@ -1326,17 +1327,17 @@ const PRIMARY_QUIZ_STAGES={
 };
 const QUIZ_STAGES={
   // 名人への道・序
-  11:0,
+  [masterStage(1,12)]:0,
   // 名人への道・破
-  17:7,
-  20:1,
-  28:4,
+  [masterStage(2,3)]:7,
+  [masterStage(2,6)]:1,
+  [masterStage(2,14)]:4,
   // 名人への道・離
-  38:2,
-  43:8,
+  [masterStage(3,9)]:2,
+  [masterStage(3,14)]:8,
   // 名人への道・極
-  49:5,
-  55:3
+  [masterStage(4,5)]:5,
+  [masterStage(4,11)]:3
 };
 
 /* ---- 盤面 ---- */
