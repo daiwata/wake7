@@ -45,6 +45,7 @@
   .app-menu-list button:hover{background:rgba(98,184,210,.1);color:var(--washi)}
   .app-menu-list .chip.on{background:#183952;color:#62B8D2}
   .app-menu-list .menu-reset{color:#8291A4}
+  .menu-divider{height:1px;margin:3px 7px;background:rgba(255,255,255,.12)}
   .language-picker{position:absolute;z-index:20;top:26px;right:0}
   .language-toggle{
     display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid rgba(255,255,255,.14);
@@ -92,18 +93,19 @@
   .stage-nav.side-mode-nav .chip{padding:8px 5px;font-size:11px;white-space:nowrap}
   .stage-title{text-align:center;line-height:1.35;color:#9FB0C4;font-size:11px;letter-spacing:.08em}
   .stage-picker-trigger{
-    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;min-height:40px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:52px;box-sizing:border-box;
     border:1px solid rgba(255,255,255,.14);border-radius:7px;background:rgba(255,255,255,.06);
-    justify-self:center;padding:3px 7px;color:inherit;font:inherit;cursor:pointer;transition:.18s;
+    justify-self:center;padding:8px 13px 3px;color:inherit;font:inherit;cursor:pointer;transition:.18s;
   }
   .stage-picker-trigger b{display:block;font-size:17px}
+  #stageKind{display:block;min-height:14px;line-height:14px}
   .stage-picker-trigger:hover{border-color:#62B8D2;background:rgba(98,184,210,.1);color:#62B8D2}
   .stage-picker-trigger:focus-visible{outline:2px solid var(--washi);outline-offset:4px;border-radius:3px}
   .stage-picker-trigger:disabled{cursor:default;opacity:.65}
   .stage-title b{display:block;color:var(--washi);font-size:17px;letter-spacing:.04em}
   .stage-title span{color:#9FB0C4}
-  .stage-detail{display:flex;align-items:center;justify-content:center;gap:10px;width:100%}
-  .stage-left{display:flex;flex-direction:column;align-items:center;min-width:0;text-align:center}
+  .stage-detail{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:21px}
+  .stage-left{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;height:21px;text-align:center}
   .stage-subtitle{display:block;margin-top:-1px;color:var(--kin)!important;font-size:9px;line-height:1.2;font-weight:700;letter-spacing:.16em;white-space:nowrap}
   .stage-subtitle[hidden]{display:none}
   .stage-count{display:grid!important;place-items:center;color:#D4E6EC!important;font-size:17px!important;line-height:1.15;white-space:nowrap}
@@ -114,6 +116,9 @@
     width:100%;max-width:372px;display:grid;grid-template-columns:repeat(15,1fr);
     gap:5px;margin:12px 0 2px;
   }
+  .primary-total{position:relative;top:5px;display:flex;justify-content:flex-end;gap:9px;width:100%;max-width:372px;height:0;margin:0;color:#8295AA;font-size:11px;line-height:14px;letter-spacing:.08em;pointer-events:none}
+  .primary-total-kind{color:inherit;font-weight:400}
+  .primary-total[hidden]{display:none}
   .progress button{
     height:6px;border:0;border-radius:999px;background:rgba(255,255,255,.13);
     cursor:pointer;transition:.18s;padding:0;
@@ -164,7 +169,7 @@
   .game-dialog{width:min(100%,350px);padding:22px 20px;border:1px solid rgba(255,255,255,.16);border-radius:15px;background:#1A3047;box-shadow:0 20px 55px rgba(0,0,0,.5);text-align:center}
   #clearDialog .game-dialog{max-height:calc(100dvh - 36px);overflow-y:auto}
   #messageDialog .game-dialog{max-height:calc(100dvh - 36px);overflow-y:auto}
-  .game-dialog h2{font-size:21px;letter-spacing:.08em;color:var(--washi)}
+  .game-dialog h2{font-size:21px;letter-spacing:.08em;color:var(--washi);white-space:pre-line}
   .game-dialog p{margin-top:9px;color:#A8B6C7;font-size:13px;line-height:1.65;white-space:pre-line}
   .quiz-dialog{width:min(100%,360px)}
   .quiz-question{margin:13px 0 11px;color:var(--washi);font-size:16px;font-weight:800;line-height:1.55}
@@ -234,14 +239,21 @@
   #introBoard .guide-happy .happy{display:block}
   .master-seal{position:relative;width:86px;height:86px;margin:0 auto 6px;border:3px solid var(--kin);border-radius:50%;color:var(--kin);display:grid;place-items:center;font-size:27px}
   .master-seal[hidden]{display:none}
-  .master-seal.rank-seal{font-size:18px;font-weight:800;letter-spacing:.08em}
+  .master-seal .seal-label{position:relative;z-index:2}
+  .master-seal .seal-spark{display:none}
+  .master-seal.rank-seal{width:132px;height:50px;margin:16px auto 26px;border:0;border-radius:0;background:transparent;color:var(--seal-color,var(--kin));font-size:18px;font-weight:800;letter-spacing:.08em;isolation:isolate}
+  .master-seal.rank-seal::before,.master-seal.rank-seal::after{content:"";display:block;position:absolute;color:inherit;animation:none}
+  .master-seal.rank-seal::before{inset:0;background:currentColor;clip-path:polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%);z-index:0}
+  .master-seal.rank-seal::after{inset:2px;background:#1A3047;clip-path:polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%);z-index:1}
+  .master-seal.rank-seal .seal-label{z-index:2}.master-seal.rank-seal .seal-spark{display:block;position:absolute;z-index:3;color:currentColor;font-size:18px;font-style:normal;animation:masterSpark 1.3s ease-in-out infinite alternate}
+  .master-seal.rank-seal .seal-spark.one{left:-22px;top:1px}.master-seal.rank-seal .seal-spark.two{right:-21px;bottom:-3px;animation-delay:.35s}
   #masterDialog .game-dialog{max-height:calc(100dvh - 32px);overflow-y:auto}
-  .master-roadmap{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin:14px -8px 8px;align-items:start}
+  .master-roadmap{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin:24px -8px 30px;align-items:start}
   .master-roadmap[hidden]{display:none}
   .road-step{position:relative;display:grid;justify-items:center;gap:3px;color:#586B80;font-size:9px;line-height:1.2;text-align:center}
   .road-step:not(:last-child)::after{content:'›';position:absolute;right:-4px;top:14px;color:#607A90;font-size:17px}
-  .road-dot{display:grid;place-items:center;width:60px;height:48px;padding:4px;border:1px solid currentColor;border-radius:5px;font-size:11px;font-weight:800;line-height:1.18}
-  .road-dot small{display:block;color:inherit;font-size:8px;line-height:1.15;font-weight:700}.road-dot.solo small{display:none}.road-step.done{color:#C9A54E}.road-step.current{color:#B9E8F2}.road-step.current .road-dot{background:#183952;box-shadow:0 0 0 2px rgba(98,184,210,.22)}
+  .road-dot{display:grid;place-items:center;width:54px;height:52px;padding:4px;border:1px solid currentColor;border-radius:5px;font-size:12px;font-weight:800;line-height:1.18}
+  .road-dot small{display:block;color:inherit;font-size:10px;line-height:1.15;font-weight:700}.road-dot.solo small{display:none}.road-step.done{color:#C9A54E}.road-step.current{color:#B9E8F2}.road-step.current .road-dot{background:#183952;box-shadow:0 0 0 2px rgba(98,184,210,.22)}
   .master-rules{margin:10px 0 0!important;padding:8px 10px;border-radius:7px;background:rgba(98,184,210,.1);color:#B9E8F2!important;font-size:12px!important;font-weight:700;text-align:left;white-space:pre-line}
   .master-seal.animate{animation:masterSeal 1.1s cubic-bezier(.18,.8,.22,1) both}
   .master-seal::before,.master-seal::after{content:"✦";position:absolute;color:#62B8D2;font-size:18px;animation:masterSpark 1.3s ease-in-out infinite alternate}
@@ -261,9 +273,15 @@
   .status-metric.remaining b.distance-pulse{animation:distancePulse .34s cubic-bezier(.2,.8,.25,1)}
   .status-metric.moves b{color:var(--washi);font-size:30px}
   .status-separator{color:rgba(255,255,255,.26);font-size:23px;font-weight:300}
-  .rank-badge{margin-left:auto;padding:5px 9px;border:1px solid rgba(201,165,78,.72);border-radius:999px;color:var(--kin);font-size:10px;font-weight:800;letter-spacing:.08em;white-space:nowrap}
+  .rank-badge{width:72px;height:29px;margin-left:auto;padding:0;border:0;background:transparent;color:var(--kin);cursor:pointer}
+  .rank-badge svg{display:block;width:100%;height:100%;overflow:visible}.rank-badge:hover{filter:brightness(1.15)}.rank-badge:focus-visible{outline:2px solid var(--washi);outline-offset:3px}
   .rank-badge[hidden]{display:none}
-  .brand .rank-badge{position:absolute;z-index:2;top:-10px;left:0;margin:0;background:rgba(22,40,60,.72)}
+  .brand .rank-badge{position:absolute;z-index:2;top:-10px;left:0;margin:0}
+  .rank-list{display:grid;gap:0;margin:14px 0 3px;text-align:left}
+  .rank-row{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;min-height:42px;padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.1);color:#687B8E;font-size:12px;line-height:1.35}
+  .rank-row:first-child{border-top:1px solid rgba(255,255,255,.1)}.rank-row b{display:block;width:90px;height:31px}.rank-row b svg{display:block;width:100%;height:100%;overflow:visible}.rank-row.earned{color:#D4E6EC}.rank-row.earned::before{content:'';position:absolute;left:0;width:2px;height:18px;background:var(--kin)}
+  .rank-stage-link{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;text-decoration:underline;text-decoration-color:rgba(185,232,242,.38);text-underline-offset:3px;cursor:pointer}.rank-stage-link:hover{color:var(--washi);text-decoration-color:var(--washi)}.rank-stage-link:focus-visible{outline:2px solid var(--washi);outline-offset:3px;border-radius:2px}
+  .rank-condition{white-space:nowrap}.rank-condition > span{margin-left:3px}
   .stage-title span.hint-info{color:#62B8D2;font-weight:700}
   .status-metric.moves b.pulse{animation:movePulse .3s cubic-bezier(.2,.8,.25,1)}
   .playbar{
@@ -384,7 +402,7 @@
   @media (max-width:480px){
     body{padding-left:4px;padding-right:4px;padding-bottom:max(8px,env(safe-area-inset-bottom))}
     .board-wrap{max-width:none}
-    .stage-nav,.progress,.mode-row,.playbar{width:calc(100% - 8px)}
+    .stage-nav,.progress,.primary-total,.mode-row,.playbar{width:calc(100% - 8px)}
   }
   html.embed,html.embed body{min-height:0}
   html.embed body{
@@ -401,16 +419,21 @@
 <header class="brand">
   <p class="sub">WAKE SEVEN</p>
   <h1>だるまさんを起こして！</h1>
-  <span class="rank-badge" id="rankBadge" hidden></span>
+  <button class="rank-badge" id="rankBadge" type="button" hidden></button>
   <div class="app-menu">
     <button class="menu-toggle" id="menuToggle" type="button" aria-expanded="false">メニュー</button>
     <div class="app-menu-list" id="appMenu" role="menu">
       <button class="chip" id="stageMode" type="button" role="menuitem">ステージモード</button>
       <button class="chip" id="freeMode" type="button" role="menuitem">フリーモード</button>
-      <button id="customMode" class="maker-link" type="button" role="menuitem">盤面を作る</button>
-      <button id="clearMessages" type="button" role="menuitem">クリア後のメッセージ</button>
+      <button id="customMode" class="maker-link" type="button" role="menuitem">自作モード</button>
+      <div class="menu-divider" role="separator"></div>
       <button id="twoMovePatterns" type="button" role="menuitem">最短2手の盤面を見る</button>
       <button id="showTip" type="button" role="menuitem">攻略のコツ</button>
+      <div class="menu-divider" role="separator"></div>
+      <button id="menuStagePicker" type="button" role="menuitem">ステージを選ぶ</button>
+      <button id="clearMessages" type="button" role="menuitem">クリア後のメッセージ</button>
+      <button id="menuRankList" type="button" role="menuitem">称号一覧</button>
+      <div class="menu-divider" role="separator"></div>
       <button id="resetProgress" class="menu-reset" type="button" role="menuitem">進行状況をリセット</button>
     </div>
   </div>
@@ -431,6 +454,7 @@
   <button class="chip" id="nextStage" aria-label="次の問題">次へ →</button>
 </div>
 <div class="progress" id="stageProgress" aria-label="全15問の進捗"></div>
+<div class="primary-total" id="primaryTotal" aria-label="全体の進行状況"><span class="primary-total-kind" id="primaryTotalKind" hidden></span><span id="primaryTotalValue"></span></div>
 <div class="mode-row">
   <div class="status-metric remaining"><span id="shortestLabel">残り最短</span><b id="stagePar">1</b><span id="moveUnit">手</span></div>
   <span class="status-separator">/</span>
@@ -489,13 +513,21 @@
 </div>
 <div class="game-dialog-backdrop" id="messageDialog" hidden>
   <div class="game-dialog" role="dialog" aria-modal="true" aria-labelledby="messageDialogTitle">
-    <div class="master-seal rank-seal" id="messageMasterSeal" hidden></div>
     <h2 id="messageDialogTitle">クリア後のメッセージ</h2>
     <p id="messageDialogPlace"></p>
+    <p id="messageRankText" hidden></p>
+    <div class="master-seal rank-seal" id="messageMasterSeal" hidden><span class="seal-label" id="messageMasterSealLabel"></span><i class="seal-spark one">✦</i><i class="seal-spark two">✦</i></div>
+    <p id="messageMasterText" hidden></p>
     <div class="master-roadmap" id="messageRoadmap" hidden></div>
     <p class="master-rules" id="messageRules" hidden></p>
     <div class="clear-tip-illustration" id="messageIllustration" hidden></div>
     <div id="messageDialogText"><span id="messageDialogTextBody"></span></div>
+    <div id="messageQuiz" hidden>
+      <div class="quiz-label" id="messageQuizTitle">だるまクイズ</div>
+      <p class="quiz-question" id="messageQuizQuestion"></p>
+      <div class="quiz-options" id="messageQuizOptions"></div>
+      <p class="quiz-note" id="messageQuizNote"></p>
+    </div>
     <div class="dialog-actions"><button class="chip" id="messagePrev">← 前へ</button><button class="chip" id="closeMessages">閉じる</button><button class="chip" id="messageNext">次へ →</button></div>
   </div>
 </div>
@@ -508,12 +540,20 @@
 </div>
 <div class="game-dialog-backdrop" id="masterDialog" hidden>
   <div class="game-dialog">
-    <div class="master-seal" id="masterSeal">突破</div>
     <h2 id="masterDialogTitle">はじめの15問 クリア！</h2>
+    <p id="masterRankText" hidden></p>
+    <div class="master-seal" id="masterSeal"><span class="seal-label" id="masterSealLabel">突破</span><i class="seal-spark one">✦</i><i class="seal-spark two">✦</i></div>
     <p id="masterDialogText">名人への道が開かれました。</p>
     <div class="master-roadmap" id="masterRoadmap"></div>
     <p class="master-rules" id="masterRules" hidden></p>
     <div class="dialog-actions"><button class="chip" id="masterClose">閉じる</button><button class="chip on" id="masterStart">名人への道へ →</button></div>
+  </div>
+</div>
+<div class="game-dialog-backdrop" id="rankDialog" hidden>
+  <div class="game-dialog" role="dialog" aria-modal="true" aria-labelledby="rankDialogTitle">
+    <h2 id="rankDialogTitle">称号</h2>
+    <div class="rank-list" id="rankList"></div>
+    <div class="dialog-actions"><button class="chip" id="closeRankDialog">閉じる</button></div>
   </div>
 </div>
 <div class="game-dialog-backdrop" id="twoMoveDialog" hidden>
@@ -785,13 +825,13 @@ const UI_TEXT={
     debugClear:'DEBUG: 即クリア',debugUnlock14:'DEBUG: 14問開放',debugUnlock:'DEBUG: 15問開放',
     debugExtra14:'DEBUG: 名人14問',debugExtra29:'DEBUG: 名人29問',debugExtra44:'DEBUG: 名人44問',debugExtra59:'DEBUG: 名人59問',
     mirror:'左右反転',rotate:'60°回転',boardLabel:'七枚のだるま盤',tips:'攻略のコツ',
-    makeBoard:'盤面を作る',playBoard:'この盤面で遊ぶ',nextPuzzle:'次の問題へ →',
+    makeBoard:'自作モード',playBoard:'この盤面で遊ぶ',nextPuzzle:'次の問題へ →',
     resetProgress:'進行状況をリセット',stage:'問題',intro:'入門',basic:'基本',challenge:'挑戦',
     freePlay:'フリーモード',boardMaker:'盤面を作る',customPuzzle:'自作問題',
     freeKind:'FREE PLAY',makerKind:'BOARD MAKER',customKind:'CUSTOM PLAY',
     another:'もう一問',again:'もう一度',toFree:'フリーモードへ →',
     allPatternsKind:'名人への道',allPatternsNext:'名人への道へ →',nextPattern:'次の問題へ →',
-    stagePicker:'ステージを選ぶ',close:'閉じる',primaryRound:'一人前',patternRound:'名人への道　{n}　全15問',
+    stagePicker:'ステージを選ぶ',close:'閉じる',rankCollection:'称号',rankListMenu:'称号一覧',primaryRound:'だるま修行',patternRound:'名人への道・{n}　全15問',
     extraStageAria:'名人への道 {n} / {total}',
     optimalClear:'最短で全員起きました。お見事。',clear:'全員起きました！',
     remaining:'残り最短 {n}手',stageAria:'問題{n}、最短{par}手',
@@ -799,10 +839,10 @@ const UI_TEXT={
     makerStatus:'ダルマをタップして向きを変更　現在の最短は{n}手',
     resetConfirm:'すべてのクリア記録をリセットしますか？',
     introTitle:'だるまさんを起こして！',introText:'くるりと3体をまわして、みんな起こそう。',introStart:'はじめる',
-    masterTitle:'おめでとうございます！',masterText:'名人への道が開かれました。\n序から極まで各15問、全60問の道のり。\n制覇の先には、名人だけのささやかなご褒美も。',masterStart:'名人への道・序へ →',
-    volumeName:'{n}の巻',volumeClearTitle:'{n} クリア！',volumeClearText:'次の巻へ進めます。',volumeStart:'次の巻へ →',
+    masterTitle:'おめでとうございます！',masterText:'名人への道が開かれました。\n「序」から「極」まで各15問、全60問の道のり。\n制覇の先には、名人だけのささやかなご褒美も。',masterStart:'名人への道・序　七転八起へ →',
+    volumeName:'{n}の巻',volumeClearTitle:'{n}\nクリア！',volumeClearText:'次の巻へ進めます。',volumeStart:'次の巻へ →',
     masteryTitle:'名人への道 制覇！',masteryText:'全パターンを攻略しました。\n金色の盤面テーマを手に入れました。',masteryStart:'フリーモードへ →'
-    ,pathInfoTitle:'名人への道',pathInfoText:'序から極まで、各15問。全60問の道のりです。',pathInfoStart:'序を始める →'
+    ,pathInfoTitle:'名人への道',pathInfoText:'「序」から「極」まで、各15問。全60問の道のりです。',pathInfoStart:'序を始める →'
     ,breakthroughSeal:'突破',masterySeal:'名人'
     ,stageClear1:'水色の棒のあたりをタップしてスワイプすると、3体を回しやすいよ。',stageClear3:'次からは、最短2手の問題です。',stageClear4:'ゲームを中断して閉じても、今やっている問題から再開できます。',stageClear6:'「七転び八起き」は、何度倒れても起き上がることのたとえです。難しくてもあきらめないで！',stageClear9:'だるまには、願いを込めて片目を入れ、かなったらもう片方も描く風習があります。',stageClear11:'だるまの赤は、まよけや生命力を表す色です。諸説ありますが、達磨大師（だるまだいし）の赤い法衣にちなむとされます。',stageClear12:'次からは、最短3手の問題です。',extraClear2:'「だるまさんがころんだ」は10文字。10まで数える代わりの言葉として使われてきました。',extraClear6:'地域によっては「へいたいさんがとおる」など、別の唱え言葉もありました。',extraClear11:'高崎だるまは、群馬県ふるさと伝統工芸品に指定されています。',extraClear18:'「だるま」という名前は、教えや法を意味するサンスクリット語「dharma」に由来します。',extraClear23:'高崎のだるまづくりは、1859年に赤い顔料が輸入されると盛んになりました。',extraClear25:'だるまは、達磨大師（だるまだいし）が9年座禅を続けたという伝説にちなみ、手足のない姿に描かれます。',extraClear35:'だるまは、木型に紙を重ねて作る「張り子」の工芸品です。',extraClear41:'1829年の高崎では、市でだるまを売る様子が版画と文章に残されています。',extraClear43:'高崎だるまの顔は、眉毛が鶴、ヒゲが亀を表すように描かれます。「縁起だるま」「福だるま」とも呼ばれます。',extraClear50:'だるまが赤い理由には諸説あり。赤い法衣や、魔よけの願いにちなむとされます。',extraClear54:'高崎だるまのお腹には、「福入」と書かれることがあります。福が入るようにという願いです。',extraClear58:'「だるまさんがころんだ」遊びの由来は比較的新しい可能性もあり、明治生まれの人々の記憶のなかには無いという話もあります。'
   },
@@ -820,7 +860,7 @@ const UI_TEXT={
     makerKind:'BOARD MAKER',customKind:'CUSTOM PLAY',another:'Another puzzle',again:'Try again',
     toFree:'Go to Free Play →',optimalClear:'Everyone is awake in the fewest moves. Brilliant!',
     allPatternsKind:'PATH TO MASTERY',allPatternsNext:'Path to Mastery →',nextPattern:'Next puzzle →',
-    stagePicker:'Choose a stage',close:'Close',primaryRound:'First 15 puzzles',patternRound:'Path to Mastery {n} · 15 puzzles',
+    stagePicker:'Choose a stage',close:'Close',rankCollection:'Titles',rankListMenu:'View titles',primaryRound:'Daruma Training',patternRound:'Path to Mastery {n} · 15 puzzles',
     extraStageAria:'Path to Mastery {n} / {total}',
     clear:'Everyone is awake!',remaining:'Best: {n} moves left',
     stageAria:'Puzzle {n}, best in {par} moves',
@@ -849,7 +889,7 @@ const UI_TEXT={
     makerKind:'制作棋盘',customKind:'自制关卡',another:'再来一题',again:'再来一次',
     toFree:'进入自由模式 →',optimalClear:'用最少步数叫醒了全部不倒翁。太棒了！',
     allPatternsKind:'名人之路',allPatternsNext:'进入名人之路 →',nextPattern:'下一题 →',
-    stagePicker:'选择关卡',close:'关闭',primaryRound:'最初15题',patternRound:'名人之路 {n} · 15题',
+    stagePicker:'选择关卡',close:'关闭',rankCollection:'称号',rankListMenu:'称号一览',primaryRound:'不倒翁修行',patternRound:'名人之路 {n} · 15题',
     extraStageAria:'名人之路 {n} / {total}',
     clear:'全部醒来了！',remaining:'还需最少 {n} 步',stageAria:'第{n}题，最少{par}步',
     makerImpossible:'这个布局无法解开。点击不倒翁改变方向。',
@@ -877,7 +917,7 @@ const UI_TEXT={
     makerKind:'보드 만들기',customKind:'사용자 문제',another:'다른 문제',again:'다시 하기',
     toFree:'자유 모드로 →',optimalClear:'최단 수로 모두 깨웠습니다. 훌륭해요!',
     allPatternsKind:'명인의 길',allPatternsNext:'명인의 길로 →',nextPattern:'다음 문제 →',
-    stagePicker:'문제 선택',close:'닫기',primaryRound:'처음 15문제',patternRound:'명인의 길 {n} · 15문제',
+    stagePicker:'문제 선택',close:'닫기',rankCollection:'칭호',rankListMenu:'칭호 목록',primaryRound:'다루마 수행',patternRound:'명인의 길 {n} · 15문제',
     extraStageAria:'명인의 길 {n} / {total}',
     clear:'모두 깨어났습니다!',remaining:'남은 최단 {n}수',stageAria:'문제 {n}, 최단 {par}수',
     makerImpossible:'이 배치는 풀 수 없습니다. 다루마를 눌러 방향을 바꾸세요.',
@@ -893,17 +933,17 @@ const UI_TEXT={
   }
 };
 Object.assign(UI_TEXT.ja,{
-  menu:'メニュー',clearMessages:'クリア後のメッセージ',messageDialogTitle:'クリア後のメッセージ',optimalFailTitle:'最短ではありません',optimalFailText:'最短手数で、もう一度挑戦しよう。',twoMovePatterns:'最短2手の盤面を見る',twoMoveTitle:'最短2手の9パターン',twoMoveText:'基本3〜11で、すべて遊べます。',twoMoveDetailTitle:'この盤面のコツ',compareBoard:'盤面をスワイプすると、ゲーム中の盤面と比べられます',playInFree:'フリーモードで遊ぶ →',backToPatterns:'一覧へ',stageModeReturn:'ステージモードへ',tipGuideTitle:'攻略のコツ',playThisBoard:'この盤面で遊ぶ →',
-  extraClear1:'名人への道では、離の途中まで最短3手の問題が続きます。',
+  menu:'メニュー',clearMessages:'クリア後のメッセージ',messageDialogTitle:'クリア後のメッセージ',optimalFailTitle:'最短ではありません',optimalFailText:'最短手数で、もう一度挑戦しよう。',twoMovePatterns:'最短2手の盤面を見る',twoMoveTitle:'最短2手の9パターン',twoMoveText:'基本3〜11で、すべて遊べます。',twoMoveDetailTitle:'この盤面のコツ',compareBoard:'盤面をスワイプすると、ゲーム中の盤面と比べられます',playInFree:'フリーモードで遊ぶ →',backToPatterns:'一覧へ',stageModeReturn:'ステージモードへ',tipGuideTitle:'攻略のコツを見る',playThisBoard:'この盤面で遊ぶ →',
+  extraClear1:'名人への道では、「離」の途中まで最短3手の問題が続きます。',
   extraClear3:'この7枚の配置のだるま起こしでは、最短4手以内に必ずクリアできる仕組みになっています。',
-  extraClear7:'極では残り最短手数が表示されません。最短2手の盤面を見分ける感覚を、今のうちに身につけておこう。',
+  extraClear7:'「極」では残り最短手数が表示されません。最短2手の盤面を見分ける感覚を、今のうちに身につけておこう。',
   extraClear9:'全ての最短4手盤面で、6本の軸をランダムに選び、最短3手になる向きへ回すと、約78％で最短3手になります。',
   extraClear33:'最短3手の盤面で、12通りの回し方をランダムに選ぶと、最短2手になるのは約17％、そのまま最短3手は約56％、最短4手になるのは約27％です。',
   extraClear36:'次からは、最短4手の問題です。',
   extraClear46:'メニューの「最短2手の盤面を見る」から、9種類の盤面を一覧で見られます。',
   extraClear47:'一覧の「左右反転」「60°回転」で向きを変えると、同じ盤面かどうかを確かめられます。',
   extraClear48:'メニューの「攻略のコツ」では、特徴的な形を図解で見られます。',extraClear49:'メニューの「最短2手の盤面」と「攻略のコツ」では、盤面をスワイプするとゲーム中の盤面と並べて見比べられます。',
-  extraClear45:'極では、残り最短手数が表示されません。\n「ヒント」ボタンで表示されるので、困ったら押してください',
+  extraClear45:'「極」では、残り最短手数が表示されません。\n「ヒント」ボタンで表示されるので、困ったら押してください',
   stageClear2:'ゲームを中断して閉じても、今やっている問題から再開できます。',
   stageClear4:'画面左上の「残り最短 ○手」を見ると、今の盤面からあと何手で起こせるかわかります。',
   stageClear5:'「やり直す」ボタンで盤面を最初に戻せます\n「1手戻す」ボタンで一つ前の手に戻れます',
@@ -1011,7 +1051,8 @@ const DARUMA_QUIZZES=[
   { q:'願かけのとき、だるまの目はどちらから入れる？',a:['向かって右','向かって左','両目いっしょ','どちらでもよい'],correct:0,note:'向かって右（だるまから見て左目）を先に入れ、願いが叶ったらもう片方を入れるのが一般的です。' },
   { q:'だるまの生産量が日本一の県は？',a:['京都府','群馬県','愛知県','福島県'],correct:1,note:'群馬県高崎市。少林山達磨寺のふもとで作られてきた高崎だるまが、全国の大半を占めています。' },
   { q:'だるまの原型になったとされる郷土玩具は？',a:['こけし','起き上がり小法師','張り子の虎','土鈴'],correct:1,note:'底を重くして必ず起き上がる玩具。これに達磨大師の姿を重ねたのがだるまです。' },
-  { q:'役目を終えただるまは、どうするのが一般的？',a:['川に流す','お寺で供養して焼く','土に埋める','売り戻す'],correct:1,note:'だるま供養。年末年始に寺社へ納め、感謝とともにお焚き上げしてもらいます。' }
+  { q:'役目を終えただるまは、どうするのが一般的？',a:['川に流す','お寺で供養して焼く','土に埋める','売り戻す'],correct:1,note:'だるま供養。年末年始に寺社へ納め、感謝とともにお焚き上げしてもらいます。' },
+  { q:'だるまの赤は、何を表す色？',a:['まよけや生命力','お祝いごとの華やかさ','火のあたたかさ','秋のもみじ'],correct:0,note:'だるまの赤は、まよけや生命力を表す色です。' }
 ];
 const DARUMA_QUIZ_TRANSLATIONS={
   en:[
@@ -1020,7 +1061,8 @@ const DARUMA_QUIZ_TRANSLATIONS={
     {q:'Which eye is painted first when making a wish?',a:['The right eye as you face it','The left eye as you face it','Both together','Either is fine'],correct:0,note:'Usually the eye on your right (the daruma’s left eye) is painted first, and the other is added when the wish comes true.'},
     {q:'Which prefecture produces the most daruma in Japan?',a:['Kyoto','Gunma','Aichi','Fukushima'],correct:1,note:'Takasaki, Gunma. Takasaki daruma, made near Shōrinzan Daruma Temple, account for the majority nationwide.'},
     {q:'Which folk toy is said to have inspired the daruma?',a:['Kokeshi','Okiagari-kobōshi','Papier-mâché tiger','Clay bell'],correct:1,note:'It is a toy weighted at the bottom so it always rises again. Daruma were created by combining this form with Bodhidharma.'},
-    {q:'What is commonly done with a daruma that has fulfilled its role?',a:['Float it down a river','Return it to a temple for a memorial burning','Bury it','Sell it back'],correct:1,note:'This is daruma kuyō. Around the New Year, daruma are returned to a temple or shrine and ritually burned with gratitude.'}
+    {q:'What is commonly done with a daruma that has fulfilled its role?',a:['Float it down a river','Return it to a temple for a memorial burning','Bury it','Sell it back'],correct:1,note:'This is daruma kuyō. Around the New Year, daruma are returned to a temple or shrine and ritually burned with gratitude.'},
+    {q:'What does daruma red represent?',a:['Protection and vitality','Celebration','The warmth of fire','Autumn leaves'],correct:0,note:'Daruma red represents protection and vitality.'}
   ],
   zh:[
     {q:'不倒翁的原型是哪位僧人？',a:['空海','达摩大师','行基','一休'],correct:1,note:'达摩大师从印度来到中国，相传面壁坐禅九年。不倒翁没有手脚的样子就来自这个故事。'},
@@ -1028,7 +1070,8 @@ const DARUMA_QUIZ_TRANSLATIONS={
     {q:'许愿时，先画不倒翁的哪只眼？',a:['面对不倒翁时右边的眼','面对不倒翁时左边的眼','两只一起','哪只都行'],correct:0,note:'一般先画面对不倒翁时右边的眼（不倒翁自己的左眼），愿望实现后再画另一只。'},
     {q:'日本不倒翁产量第一的县是？',a:['京都府','群马县','爱知县','福岛县'],correct:1,note:'群马县高崎市。少林山达磨寺附近制作的高崎不倒翁占全国大部分产量。'},
     {q:'被认为是不倒翁原型的乡土玩具是？',a:['木芥子','起身小法师','纸糊老虎','土铃'],correct:1,note:'它的底部较重，一定会重新立起。不倒翁就是把达摩大师的形象和这种玩具结合而成的。'},
-    {q:'完成使命的不倒翁，一般怎么处理？',a:['放进河里','送到寺院供养焚烧','埋进土里','卖回去'],correct:1,note:'这叫不倒翁供养。年末年初送到寺社，带着感谢进行焚烧仪式。'}
+    {q:'完成使命的不倒翁，一般怎么处理？',a:['放进河里','送到寺院供养焚烧','埋进土里','卖回去'],correct:1,note:'这叫不倒翁供养。年末年初送到寺社，带着感谢进行焚烧仪式。'},
+    {q:'不倒翁的红色象征什么？',a:['避邪与生命力','喜庆热闹','火的温暖','秋天的红叶'],correct:0,note:'不倒翁的红色象征避邪与生命力。'}
   ],
   ko:[
     {q:'다루마의 모델이 된 스님의 이름은?',a:['구카이','달마대사','교키','잇큐'],correct:1,note:'인도 출신으로 중국에 건너간 달마대사는 벽을 마주 보고 9년 동안 좌선했다고 전해집니다. 손발 없는 다루마 모습은 이 일화에서 나왔어요.'},
@@ -1036,9 +1079,11 @@ const DARUMA_QUIZ_TRANSLATIONS={
     {q:'소원을 빌 때 다루마의 어느 쪽 눈부터 그릴까?',a:['마주 보았을 때 오른쪽','마주 보았을 때 왼쪽','양쪽을 함께','어느 쪽이든'],correct:0,note:'보통 마주 보았을 때 오른쪽 눈(다루마 자신에게는 왼쪽 눈)을 먼저 그리고, 소원이 이루어지면 다른 쪽을 그립니다.'},
     {q:'일본에서 다루마 생산량이 가장 많은 현은?',a:['교토부','군마현','아이치현','후쿠시마현'],correct:1,note:'군마현 다카사키시입니다. 소린잔 다루마사 근처에서 만들어진 다카사키 다루마가 전국 대다수를 차지합니다.'},
     {q:'다루마의 원형이 되었다고 전해지는 향토 장난감은?',a:['고케시','오키아가리코보시','종이호랑이','흙방울'],correct:1,note:'밑을 무겁게 만들어 반드시 다시 일어나는 장난감입니다. 여기에 달마대사의 모습을 겹친 것이 다루마예요.'},
-    {q:'역할을 마친 다루마는 보통 어떻게 할까?',a:['강에 띄운다','절에서 공양하고 태운다','땅에 묻는다','되판다'],correct:1,note:'다루마 공양입니다. 연말연시에 절이나 신사에 돌려드리고, 감사와 함께 태워 올립니다.'}
+    {q:'역할을 마친 다루마는 보통 어떻게 할까?',a:['강에 띄운다','절에서 공양하고 태운다','땅에 묻는다','되판다'],correct:1,note:'다루마 공양입니다. 연말연시에 절이나 신사에 돌려드리고, 감사와 함께 태워 올립니다.'},
+    {q:'다루마의 붉은색은 무엇을 뜻할까?',a:['액막이와 생명력','축하의 화려함','불의 따뜻함','가을 단풍'],correct:0,note:'다루마의 붉은색은 액막이와 생명력을 뜻합니다.'}
   ]
 };
+const PRIMARY_QUIZ_STAGES={10:6};
 const QUIZ_STAGES={11:0,20:1,28:4,38:2,49:5,55:3};
 
 /* ---- 盤面 ---- */
@@ -1767,10 +1812,10 @@ let pickerRound=-1;
 const EXTRA_ROUNDS=Math.ceil(EXTRA_STAGES.length/STAGES.length);
 const allPrimaryCleared=()=>STAGES.every((_,i)=>clearedStages.has(i));
 const MASTER_PATH={
-  ja:{subtitles:['七転八起','だるま修行','面壁九年','最終奥義'],ranks:['一人前','不屈','熟練','師範','名人'],earned:'称号「{rank}」を獲得しました。'},
-  en:{subtitles:['Seven Falls, Eight Rises','Daruma Training','Nine Years Facing the Wall','Final Secret'],ranks:['Adept','Unyielding','Seasoned','Instructor','Master'],earned:'You earned the title “{rank}”.'},
-  zh:{subtitles:['七转八起','不倒翁修行','面壁九年','最终奥义'],ranks:['独当一面','不屈','熟练','师范','名人'],earned:'获得称号“{rank}”。'},
-  ko:{subtitles:['칠전팔기','다루마 수행','면벽구년','최종 오의'],ranks:['일인분','불굴','숙련','사범','명인'],earned:'칭호 “{rank}”을(를) 획득했습니다.'}
+  ja:{subtitles:['七転八起','面壁九年','不立文字','達磨大師'],ranks:['一人前','不屈','熟練','師範','名人'],earned:'称号「{rank}」を獲得しました。'},
+  en:{subtitles:['Seven Falls, Eight Rises','Nine Years Facing the Wall','Beyond Words','Bodhidharma'],ranks:['Adept','Unyielding','Seasoned','Instructor','Master'],earned:'You earned the title “{rank}”.'},
+  zh:{subtitles:['七转八起','面壁九年','不立文字','达摩大师'],ranks:['独当一面','不屈','熟练','师范','名人'],earned:'获得称号“{rank}”。'},
+  ko:{subtitles:['칠전팔기','면벽구년','불립문자','달마대사'],ranks:['일인분','불굴','숙련','사범','명인'],earned:'칭호 “{rank}”을(를) 획득했습니다.'}
 };
 const masterPath=()=>MASTER_PATH[currentLang]||MASTER_PATH.ja;
 const masterSubtitle=volume=>masterPath().subtitles[volume-1]||'';
@@ -1783,10 +1828,54 @@ function highestRankIndex(){
   return allPrimaryCleared()?0:-1;
 }
 function rankEarnedText(rank){return masterPath().earned.replace('{rank}',rank);}
+const RANK_FRAME_COLORS=[
+  {stroke:'#F3E8D5',ink:'#F3E8D5'},
+  {stroke:'#D9827A',ink:'#D9827A'},
+  {stroke:'#9A86D6',ink:'#9A86D6'},
+  {stroke:'#62B8D2',ink:'#62B8D2'},
+  {stroke:'#C9A54E',ink:'#C9A54E'}
+];
+function setSealColor(seal,index){seal.style.setProperty('--seal-color',(RANK_FRAME_COLORS[index]||RANK_FRAME_COLORS[0]).stroke);}
+function rankFrameSvg(text,locked=false,index=0){
+  const colors=RANK_FRAME_COLORS[index]||RANK_FRAME_COLORS[0];
+  const stroke=locked?'#64778A':colors.stroke,fill=locked?'rgba(80,101,120,.08)':'rgba(201,165,78,.05)',ink=locked?'#73869A':colors.ink;
+  const size=text.length>=3?23:27;
+  return '<svg viewBox="0 0 150 58" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="'+text+'"><path d="M15 3H135L147 29 135 55H15L3 29Z" fill="'+fill+'" stroke="'+stroke+'" stroke-width="2" stroke-linejoin="round"/><text x="75" y="30" text-anchor="middle" dominant-baseline="central" font-family="Hiragino Sans,Yu Gothic,sans-serif" font-size="'+size+'" font-weight="700" fill="'+ink+'" letter-spacing="1">'+text+'</text></svg>';
+}
 function renderRankBadge(){
   const index=highestRankIndex(),badge=$('rankBadge');
   badge.hidden=index<0;
-  if(index>=0)badge.textContent=masterPath().ranks[index];
+  if(index>=0){
+    badge.innerHTML=rankFrameSvg(masterPath().ranks[index],false,index);
+    badge.title=tr('rankCollection');
+    badge.setAttribute('aria-label',tr('rankCollection'));
+  }
+}
+function rankPathLabel(index){
+  if(index===0)return tr('primaryRound');
+  const volume=index;
+  return currentLang==='ja'?'名人への道・'+volumeLabel(volume)+'　'+masterSubtitle(volume):tr('allPatternsKind')+' · '+masterSubtitle(volume);
+}
+function renderRankList(){
+  const highest=highestRankIndex(),list=$('rankList');
+  $('rankDialogTitle').textContent=tr('rankCollection');
+  $('closeRankDialog').textContent=tr('close');
+  list.innerHTML='';
+  masterPath().ranks.forEach((rank,index)=>{
+    const earned=index<=highest,row=document.createElement('div');
+    row.className='rank-row'+(earned?' earned':'');
+    const condition=document.createElement('span'),path=document.createElement('button'),clear=document.createElement('span'),title=document.createElement('b');
+    condition.className='rank-condition';
+    path.className='rank-stage-link';path.type='button';path.textContent=rankPathLabel(index);title.innerHTML=rankFrameSvg(earned?rank:'？',!earned,index);
+    clear.textContent=currentLang==='ja'?'クリア':'';
+    path.addEventListener('click',()=>openStagePickerForRank(index));
+    condition.append(path,clear);row.append(condition,title);list.appendChild(row);
+  });
+}
+function openRankDialog(){
+  renderRankList();
+  $('rankDialog').hidden=false;
+  $('closeRankDialog').focus();
 }
 const primaryStageUnlocked=index=>index===0||clearedStages.has(index)||clearedStages.has(index-1);
 const extraStageUnlocked=index=>index===0||clearedExtraStages.has(index)||clearedExtraStages.has(index-1);
@@ -1833,6 +1922,12 @@ function renderStagePicker(){
 function openStagePicker(){
   if(freeMode||customMode)return;
   pickerRound=extraMode?Math.floor(extraIndex/STAGES.length):-1;
+  renderStagePicker();
+  $('stagePicker').hidden=false;
+}
+function openStagePickerForRank(rankIndex){
+  $('rankDialog').hidden=true;
+  pickerRound=rankIndex===0?-1:rankIndex-1;
   renderStagePicker();
   $('stagePicker').hidden=false;
 }
@@ -1914,6 +2009,7 @@ function renderStageNav(){
   $('stageMode').setAttribute('aria-pressed',String(!freeMode&&!customMode));
   $('freeMode').setAttribute('aria-pressed',String(freeMode));
   $('stageModeReturn').hidden=true;
+  $('menuRankList').hidden=!allPrimaryCleared();
   $('customMode').textContent=tr('makeBoard');
   $('customMode').classList.remove('ready');
   $('customMode').hidden=false;
@@ -1953,6 +2049,16 @@ function renderStageNav(){
       $('stageNumber').textContent=(stageIndex-11)+' / 3';
     }
     showRemaining(remainingForDisplay(SOLVER.dist[enc(ori)]),false);
+  }
+  const showingCourseProgress=!freeMode&&!customMode;
+  $('primaryTotal').hidden=!showingCourseProgress;
+  $('primaryTotalKind').hidden=!(extraMode||allPrimaryCleared());
+  if(extraMode){
+    $('primaryTotalKind').textContent=tr('allPatternsKind');
+    $('primaryTotalValue').textContent=(extraIndex+1)+' / '+EXTRA_STAGES.length;
+  }else if(showingCourseProgress){
+    if(allPrimaryCleared())$('primaryTotalKind').textContent=tr('primaryRound');
+    $('primaryTotalValue').textContent=(stageIndex+1)+' / '+STAGES.length;
   }
   renderRankBadge();
   renderProgress();
@@ -2029,7 +2135,7 @@ function stageClearTextAt(mode,index){
   if(index===7)return tr('stageClear8');
   if(index===8)return tr('extraClear11');
   if(index===9)return tr('stageClear10');
-  if(index===10)return tr('stageClear11');
+  if(index===10)return '';
   if(index===11)return tr('stageClear12');
   if(index===12)return tr('extraClear50');
   if(index===13)return tr('stageClearChallenge2');
@@ -2145,11 +2251,13 @@ function buildMessageReviewEntries(){
     if(!clearedStages.has(i))continue;
     if(i===14){entries.push({master:'primary',extra:false,index:i});continue;}
     const text=stageClearTextAt(false,i);if(text)entries.push({extra:false,index:i,text,art:stageClearArtAt(false,i)});
+    if(PRIMARY_QUIZ_STAGES[i]!==undefined)entries.push({extra:false,index:i,quiz:PRIMARY_QUIZ_STAGES[i]});
   }
   for(let i=0;i<EXTRA_STAGES.length;i++){
     if(!clearedExtraStages.has(i))continue;
     if((i+1)%STAGES.length===0){entries.push({master:i===EXTRA_STAGES.length-1?'mastery':'volume',extra:true,index:i});continue;}
     const text=stageClearTextAt(true,i);if(text)entries.push({extra:true,index:i,text,art:stageClearArtAt(true,i)});
+    if(QUIZ_STAGES[i]!==undefined)entries.push({extra:true,index:i,quiz:QUIZ_STAGES[i]});
   }
   return entries;
 }
@@ -2165,23 +2273,29 @@ function messageReviewPlace(entry){
 }
 function renderMessageReview(){
   const entry=messageReviewEntries[messageReviewIndex];if(!entry)return;
-  const art=entry.art||'',illustration=$('messageIllustration'),roadmap=$('messageRoadmap'),rules=$('messageRules'),seal=$('messageMasterSeal');
+  const art=entry.art||'',illustration=$('messageIllustration'),roadmap=$('messageRoadmap'),rules=$('messageRules'),seal=$('messageMasterSeal'),rankText=$('messageRankText'),masterText=$('messageMasterText');
   roadmap.hidden=!entry.master;rules.hidden=true;
   seal.hidden=!entry.master;
-  $('messageDialogText').hidden=!!entry.master;
+  rankText.hidden=true;masterText.hidden=true;
+  $('messageDialogText').hidden=!!entry.master||entry.quiz!==undefined;
+  $('messageQuiz').hidden=entry.quiz===undefined;
   if(entry.master){
     const volume=entry.master==='primary'?0:Math.ceil((entry.index+1)/STAGES.length);
-    const current=entry.master==='primary'?1:entry.master==='mastery'?5:Math.min(4,volume+1);
+    const current=entry.master==='primary'?2:entry.master==='mastery'?6:Math.min(5,volume+2);
     roadmap.innerHTML=masterRoadmapMarkup(current);
     if(entry.master==='primary'){
-      seal.textContent=masterPath().ranks[0];$('messageDialogTitle').textContent=tr('masterTitle');$('messageDialogPlace').textContent=messageReviewPlace(entry)+'\n'+rankEarnedText(masterPath().ranks[0])+'\n'+tr('masterText');rules.hidden=false;rules.textContent=masterCommonRules();
+      $('messageMasterSealLabel').textContent=masterPath().ranks[0];setSealColor(seal,0);$('messageDialogTitle').textContent=tr('masterTitle');$('messageDialogPlace').textContent=messageReviewPlace(entry);rankText.hidden=false;rankText.textContent=rankEarnedText(masterPath().ranks[0]);masterText.hidden=false;masterText.textContent=tr('masterText');rules.hidden=false;rules.textContent=masterCommonRules();
     }else if(entry.master==='mastery'){
-      seal.textContent=masterPath().ranks[4];$('messageDialogTitle').textContent=tr('masteryTitle');$('messageDialogPlace').textContent=messageReviewPlace(entry)+'\n'+rankEarnedText(masterPath().ranks[4])+'\n'+tr('masteryText');
+      $('messageMasterSealLabel').textContent=masterPath().ranks[4];setSealColor(seal,4);$('messageDialogTitle').textContent=tr('masteryTitle');$('messageDialogPlace').textContent=messageReviewPlace(entry);rankText.hidden=false;rankText.textContent=rankEarnedText(masterPath().ranks[4]);masterText.hidden=false;masterText.textContent=tr('masteryText');
     }else{
-      const nextRules={ja:['破からは、ヒントが使えなくなります。','離では途中から最短4手の問題です。\nスワイプ中は残り最短手数が「？」になります。','極では残り最短手数が表示されません。\n「残り手数」ボタンは最初の7問で2回、次の5問で1回。最後の3問では使えません。']}[currentLang]||[];
+      const nextRules={ja:['「破」からは、ヒントが使えなくなります。','「離」では途中から最短4手の問題です。\nスワイプ中は残り最短手数が「？」になります。','「極」では残り最短手数が表示されません。\nかわりに回数限定で「残り手数」のボタンが使えますが、これも途中から回数が減っていきます。']}[currentLang]||[];
       const clearName=currentLang==='ja'?'名人への道・'+volumeLabel(volume)+'　'+masterSubtitle(volume):volumeLabel(volume)+'　'+masterSubtitle(volume);
-      seal.textContent=rankForVolume(volume);$('messageDialogTitle').textContent=tr('volumeClearTitle',{n:clearName});$('messageDialogPlace').textContent=messageReviewPlace(entry)+'\n'+rankEarnedText(rankForVolume(volume))+'\n'+(nextRules[volume-1]||tr('volumeClearText'));
+      $('messageMasterSealLabel').textContent=rankForVolume(volume);setSealColor(seal,volume);$('messageDialogTitle').textContent=tr('volumeClearTitle',{n:clearName});$('messageDialogPlace').textContent=messageReviewPlace(entry);rankText.hidden=false;rankText.textContent=rankEarnedText(rankForVolume(volume));masterText.hidden=false;masterText.textContent=nextRules[volume-1]||tr('volumeClearText');
     }
+  }else if(entry.quiz!==undefined){
+  $('messageDialogTitle').textContent=tr('quizTitle');
+  $('messageDialogPlace').textContent=messageReviewPlace(entry);
+  renderMessageQuiz(entry.quiz);
   }else{
   $('messageDialogText').hidden=false;
   $('messageDialogTitle').textContent=tr('messageDialogTitle');
@@ -2197,6 +2311,24 @@ function renderMessageReview(){
   illustration.hidden=!art;
   $('messagePrev').disabled=messageReviewIndex===0;
   $('messageNext').disabled=messageReviewIndex===messageReviewEntries.length-1;
+}
+function renderMessageQuiz(quizIndex){
+  const quiz=(DARUMA_QUIZ_TRANSLATIONS[currentLang]||DARUMA_QUIZZES)[quizIndex],options=$('messageQuizOptions'),note=$('messageQuizNote');
+  $('messageQuizTitle').textContent=tr('quizTitle');
+  $('messageQuizQuestion').textContent=quiz.q;
+  note.textContent='';
+  options.innerHTML='';
+  quiz.a.forEach((answer,index)=>{
+    const button=document.createElement('button');
+    button.className='quiz-option';button.type='button';button.textContent=answer;
+    button.addEventListener('click',()=>{
+      [...options.children].forEach(item=>item.disabled=true);
+      options.children[quiz.correct].classList.add('correct');
+      if(index===quiz.correct)note.textContent=tr('quizCorrect')+'　'+quiz.note;
+      else{button.classList.add('wrong');note.textContent=tr('quizWrong')+'　'+quiz.note;}
+    });
+    options.appendChild(button);
+  });
 }
 function openMessageReview(){
   messageReviewEntries=buildMessageReviewEntries();
@@ -2216,13 +2348,14 @@ function hideGameDialogs(){
   $('optimalFailDialog').hidden=true;
   $('clearQuiz').hidden=true;
   $('masterDialog').hidden=true;
+  $('rankDialog').hidden=true;
   $('twoMoveDialog').hidden=true;
   $('twoMoveDetailDialog').hidden=true;
   $('tipGuideDialog').hidden=true;
   $('clearNext').hidden=true;
 }
 function renderClearQuiz(){
-  const quizIndex=extraMode?QUIZ_STAGES[extraIndex]:undefined;
+  const quizIndex=extraMode?QUIZ_STAGES[extraIndex]:(!freeMode&&!customMode?PRIMARY_QUIZ_STAGES[stageIndex]:undefined);
   const root=$('clearQuiz');
   root.hidden=quizIndex===undefined;
   if(quizIndex===undefined)return;
@@ -2403,34 +2536,39 @@ function animateTwoMovePatterns(angle=0,mirror=false){
 function showMasterDialog(kind='primary'){
   masterDialogKind=kind;
   const seal=$('masterSeal');
+  const rankText=$('masterRankText');
+  rankText.hidden=true;
   seal.classList.remove('rank-seal');
   if(kind==='primary'){
-    seal.textContent=masterPath().ranks[0];
+    $('masterSealLabel').textContent=masterPath().ranks[0];setSealColor(seal,0);
     seal.classList.add('rank-seal');
     $('masterDialogTitle').textContent=tr('masterTitle');
-    $('masterDialogText').textContent=rankEarnedText(masterPath().ranks[0])+'\n'+tr('masterText');
+    rankText.hidden=false;rankText.textContent=rankEarnedText(masterPath().ranks[0]);
+    $('masterDialogText').textContent=tr('masterText');
     $('masterStart').textContent=tr('masterStart');
   }else if(kind==='pathInfo'){
-    seal.textContent='道';
+    $('masterSealLabel').textContent='道';
     $('masterDialogTitle').textContent=tr('pathInfoTitle');
     $('masterDialogText').textContent=tr('pathInfoText');
     $('masterStart').textContent=tr('pathInfoStart');
   }else if(kind==='volume'){
     const volume=Math.ceil((extraIndex+1)/STAGES.length);
     const rank=rankForVolume(volume);
-    seal.textContent=rank;
+    $('masterSealLabel').textContent=rank;setSealColor(seal,volume);
     seal.classList.add('rank-seal');
     const clearName=currentLang==='ja'?'名人への道・'+volumeLabel(volume)+'　'+masterSubtitle(volume):volumeLabel(volume)+'　'+masterSubtitle(volume);
     $('masterDialogTitle').textContent=tr('volumeClearTitle',{n:clearName});
-    const nextRules={ja:['破からは、ヒントが使えなくなります。','離では途中から最短4手の問題です。\nスワイプ中は残り最短手数が「？」になります。','極では残り最短手数が表示されません。\n「残り手数」ボタンは最初の7問で2回、次の5問で1回。最後の3問では使えません。'],en:['Hints are unavailable from Volume 2.','Volume 3 introduces four-move puzzles.\nMoves left are hidden while swiping.','Volume 4 hides moves left.\nCheck it twice for seven puzzles, once for five, and never for the final three.']}[currentLang]||[];
+    const nextRules={ja:['「破」からは、ヒントが使えなくなります。','「離」では途中から最短4手の問題です。\nスワイプ中は残り最短手数が「？」になります。','「極」では残り最短手数が表示されません。\nかわりに回数限定で「残り手数」のボタンが使えますが、これも途中から回数が減っていきます。'],en:['Hints are unavailable from Volume 2.','Volume 3 introduces four-move puzzles.\nMoves left are hidden while swiping.','Volume 4 hides moves left.\nCheck it twice for seven puzzles, once for five, and never for the final three.']}[currentLang]||[];
     const nextRule=nextRules[volume-1]||tr('volumeClearText');
-    $('masterDialogText').textContent=rankEarnedText(rank)+'\n'+nextRule;
-    $('masterStart').textContent=currentLang==='ja'?'名人への道・'+volumeLabel(volume+1)+'へ →':tr('volumeStart');
+    rankText.hidden=false;rankText.textContent=rankEarnedText(rank);
+    $('masterDialogText').textContent=nextRule;
+    $('masterStart').textContent=currentLang==='ja'?'名人への道・'+volumeLabel(volume+1)+'　'+masterSubtitle(volume+1)+'へ →':tr('volumeStart');
   }else{
-    seal.textContent=masterPath().ranks[4];
+    $('masterSealLabel').textContent=masterPath().ranks[4];setSealColor(seal,4);
     seal.classList.add('rank-seal');
     $('masterDialogTitle').textContent=tr('masteryTitle');
-    $('masterDialogText').textContent=rankEarnedText(masterPath().ranks[4])+'\n'+tr('masteryText');
+    rankText.hidden=false;rankText.textContent=rankEarnedText(masterPath().ranks[4]);
+    $('masterDialogText').textContent=tr('masteryText');
     $('masterStart').textContent=tr('masteryStart');
   }
   renderMasterRoadmap(kind);
@@ -2446,7 +2584,7 @@ function returnToStageMode(){
   else loadStage(lastStageMode.index);
 }
 function renderMasterRoadmap(kind){
-  const current=kind==='primary'?1:kind==='volume'?Math.min(4,Math.ceil((extraIndex+1)/STAGES.length)+1):5;
+  const current=kind==='primary'?2:kind==='volume'?Math.min(5,Math.ceil((extraIndex+1)/STAGES.length)+2):kind==='mastery'?6:(allPrimaryCleared()?2:1);
   $('masterRoadmap').innerHTML=masterRoadmapMarkup(current);
   const rules=$('masterRules');rules.hidden=kind!=='primary';
   if(kind==='primary')rules.textContent=masterCommonRules();
@@ -2454,7 +2592,10 @@ function renderMasterRoadmap(kind){
 function masterRoadmapMarkup(current){
   const labels=[tr('primaryRound'),volumeLabel(1),volumeLabel(2),volumeLabel(3),volumeLabel(4)];
   const subs=['',masterSubtitle(1),masterSubtitle(2),masterSubtitle(3),masterSubtitle(4)];
-  return labels.map((label,i)=>'<div class="road-step '+(i+1<current?'done':i+1===current?'current':'')+'"><span class="road-dot '+(!subs[i]?'solo':'')+'">'+label+'<small>'+subs[i]+'</small></span></div>').join('');
+  return labels.map((label,i)=>{
+    const displayLabel=!subs[i]&&currentLang==='ja'?(label==='だるま修行'?'だるま<br>修行':label.replace('への','<br>への')):label;
+    return '<div class="road-step '+(i+1<current?'done':i+1===current?'current':'')+'"><span class="road-dot '+(!subs[i]?'solo':'')+'">'+displayLabel+'<small>'+subs[i]+'</small></span></div>';
+  }).join('');
 }
 function masterCommonRules(){return currentLang==='ja'?'名人への道の共通ルール\n・最短手数でクリアする\n・巻が進むほど、使える情報が減っていきます':'Path to Mastery rules\n• Clear in the fewest moves\n• Each volume gives you less information';}
 $('prevStage').addEventListener('click',()=>{
@@ -2541,6 +2682,8 @@ $('optimalRetry').addEventListener('click',()=>{
   renderStageNav();
 });
 $('clearMessages').addEventListener('click',openMessageReview);
+$('menuStagePicker').addEventListener('click',()=>{closeAppMenu();openStagePicker();});
+$('menuRankList').addEventListener('click',()=>{closeAppMenu();openRankDialog();});
 $('closeMessages').addEventListener('click',()=>{$('messageDialog').hidden=true;});
 $('messagePrev').addEventListener('click',()=>{if(messageReviewIndex>0){messageReviewIndex--;renderMessageReview();}});
 $('messageNext').addEventListener('click',()=>{if(messageReviewIndex<messageReviewEntries.length-1){messageReviewIndex++;renderMessageReview();}});
@@ -2570,6 +2713,8 @@ $('masterClose').addEventListener('click',()=>{
   hideGameDialogs();
   renderStageNav();
 });
+$('rankBadge').addEventListener('click',openRankDialog);
+$('closeRankDialog').addEventListener('click',()=>{$('rankDialog').hidden=true;$('rankBadge').focus();});
 $('masterStart').addEventListener('click',()=>{
   hideGameDialogs();
   if(masterDialogKind==='primary'||masterDialogKind==='pathInfo')loadExtraStage(0);
@@ -2798,6 +2943,8 @@ function applyLanguage(lang){
   $('movesLabel').textContent=tr('moves');
   $('stageMode').textContent=tr('stageMode');
   $('freeMode').textContent=tr('freeMode');
+  $('menuStagePicker').textContent=tr('stagePicker');
+  $('menuRankList').textContent=tr('rankListMenu');
   $('clearMessages').textContent=tr('clearMessages');
   $('stageModeReturn').textContent=tr('stageModeReturn');
   $('shuffle').textContent=tr('shuffle');
@@ -2834,6 +2981,7 @@ function applyLanguage(lang){
   $('introStart').textContent=tr('introStart');
   $('clearClose').textContent=tr('close');
   $('masterClose').textContent=tr('close');
+  if(!$('rankDialog').hidden)renderRankList();
   if(!$('masterDialog').hidden)showMasterDialog(masterDialogKind);
   renderStageNav();
   if(!$('stagePicker').hidden)renderStagePicker();
