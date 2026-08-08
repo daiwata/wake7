@@ -256,6 +256,8 @@
   .master-seal .seal-label{position:relative;z-index:2}
   .master-seal .seal-spark{display:none}
   .master-seal.rank-seal{width:132px;height:50px;margin:16px auto 26px;border:0;border-radius:0;background:transparent;color:var(--seal-color,var(--kin));font-size:18px;font-weight:800;letter-spacing:.08em;isolation:isolate}
+  .master-seal.rank-seal[role="button"]{cursor:pointer}
+  .master-seal.rank-seal[role="button"]:focus-visible{outline:2px solid currentColor;outline-offset:5px}
   .master-seal.rank-seal::before,.master-seal.rank-seal::after{content:"";display:block;position:absolute;color:inherit;animation:none}
   .master-seal.rank-seal::before{inset:0;background:currentColor;clip-path:polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%);z-index:0}
   .master-seal.rank-seal::after{inset:2px;background:#1A3047;clip-path:polygon(10% 0,90% 0,100% 50%,90% 100%,10% 100%,0 50%);z-index:1}
@@ -543,7 +545,7 @@
     <h2 id="messageDialogTitle">クリア後のメッセージ</h2>
     <p id="messageDialogPlace"></p>
     <p id="messageRankText" hidden></p>
-    <div class="master-seal rank-seal" id="messageMasterSeal" hidden><span class="seal-label" id="messageMasterSealLabel"></span><i class="seal-spark one">✦</i><i class="seal-spark two">✦</i></div>
+    <div class="master-seal rank-seal" id="messageMasterSeal" role="button" tabindex="0" hidden><span class="seal-label" id="messageMasterSealLabel"></span><i class="seal-spark one">✦</i><i class="seal-spark two">✦</i></div>
     <p id="messageMasterText" hidden></p>
     <div class="mastery-board" id="messageMasteryBoard" hidden></div>
     <div class="master-roadmap" id="messageRoadmap" hidden></div>
@@ -572,7 +574,7 @@
   <div class="game-dialog">
     <h2 id="masterDialogTitle">はじめの15問 クリア！</h2>
     <p id="masterRankText" hidden></p>
-    <div class="master-seal" id="masterSeal"><span class="seal-label" id="masterSealLabel">突破</span><i class="seal-spark one">✦</i><i class="seal-spark two">✦</i></div>
+    <div class="master-seal" id="masterSeal" role="button" tabindex="0"><span class="seal-label" id="masterSealLabel">突破</span><i class="seal-spark one">✦</i><i class="seal-spark two">✦</i></div>
     <p id="masterDialogText">名人への道が開かれました。</p>
     <div class="mastery-board" id="masteryBoard" hidden></div>
     <div class="master-roadmap" id="masterRoadmap"></div>
@@ -994,7 +996,7 @@ const UI_TEXT={
     ,stageClear1:'水色の棒のあたりをタップしてスワイプすると、3体を回しやすいよ。'
     ,stageClear3:'次からは、最短2手の問題です。'
     ,stageClear4:'ゲームを中断して閉じても、今やっている問題から再開できます。'
-    ,stageClear6:'「七転び八起き」は、何度倒れても起き上がることのたとえです。難しくてもあきらめないで！'
+    ,stageClear6:'七転八起（しちてんはっき）は、何度倒れても起き上がることのたとえです。七転び八起きとも言いますね。難しくてもあきらめないで！'
     ,stageClear9:'だるまには、願いを込めて片目を入れ、かなったらもう片方も描く風習があります。'
     ,stageClear11:'だるまの赤は、まよけや生命力を表す色です。諸説ありますが、達磨大師（だるまだいし）の赤い法衣にちなむとされます。'
     ,stageClear12:'次からは、最短3手の問題です。'
@@ -2254,6 +2256,12 @@ function openRankDialog(){
   $('rankDialog').hidden=false;
   $('closeRankDialog').focus();
 }
+function openRankDialogFrom(dialogId,sealId){
+  const seal=$(sealId);
+  if(!seal.classList.contains('rank-seal'))return;
+  $(dialogId).hidden=true;
+  openRankDialog();
+}
 const primaryStageUnlocked=index=>index===0||clearedStages.has(index)||clearedStages.has(index-1);
 const extraStageUnlocked=index=>index===0||clearedExtraStages.has(index)||clearedExtraStages.has(index-1);
 function extraRoundLabel(round){
@@ -3005,6 +3013,7 @@ function showMasterDialog(kind='primary'){
     $('masterDialogText').textContent=tr('masteryText');
     $('masterStart').textContent=tr('masteryStart');
   }
+  seal.tabIndex=seal.classList.contains('rank-seal')?0:-1;
   renderMasterRoadmap(kind);
   $('masterDialog').hidden=false;
   seal.classList.remove('animate');
@@ -3157,6 +3166,13 @@ $('masterClose').addEventListener('click',()=>{
   renderStageNav();
 });
 $('rankBadge').addEventListener('click',openRankDialog);
+$('masterSeal').addEventListener('click',()=>openRankDialogFrom('masterDialog','masterSeal'));
+$('messageMasterSeal').addEventListener('click',()=>openRankDialogFrom('messageDialog','messageMasterSeal'));
+for(const [sealId,dialogId] of [['masterSeal','masterDialog'],['messageMasterSeal','messageDialog']]){
+  $(sealId).addEventListener('keydown',event=>{
+    if(event.key==='Enter'||event.key===' '){event.preventDefault();openRankDialogFrom(dialogId,sealId);}
+  });
+}
 $('closeRankDialog').addEventListener('click',()=>{$('rankDialog').hidden=true;$('rankBadge').focus();});
 $('masterStart').addEventListener('click',()=>{
   hideGameDialogs();
@@ -3428,6 +3444,8 @@ function applyLanguage(lang){
   $('introStart').textContent=tr('introStart');
   $('clearClose').textContent=tr('close');
   $('masterClose').textContent=tr('close');
+  $('masterSeal').setAttribute('aria-label',tr('rankCollection'));
+  $('messageMasterSeal').setAttribute('aria-label',tr('rankCollection'));
   if(!$('rankDialog').hidden)renderRankList();
   if(!$('masterDialog').hidden)showMasterDialog(masterDialogKind);
   renderStageNav();
