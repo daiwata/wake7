@@ -95,7 +95,7 @@
   .stage-picker-trigger{
     display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;height:52px;box-sizing:border-box;
     border:1px solid rgba(255,255,255,.14);border-radius:7px;background:rgba(255,255,255,.06);
-    justify-self:center;padding:8px 13px 3px;color:inherit;font:inherit;cursor:pointer;transition:.18s;
+    justify-self:center;width:100%;min-width:0;padding:8px 13px 3px;color:inherit;font:inherit;cursor:pointer;transition:.18s;
   }
   .stage-picker-trigger b{display:block;font-size:17px}
   #stageKind{display:block;min-height:14px;line-height:14px}
@@ -104,7 +104,7 @@
   .stage-picker-trigger:disabled{cursor:default;opacity:.65}
   .stage-title b{display:block;color:var(--washi);font-size:17px;letter-spacing:.04em}
   .stage-title span{color:#9FB0C4}
-  .stage-detail{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:21px}
+  .stage-detail{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-width:0;height:21px}
   .stage-left{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:0;height:21px;text-align:center}
   .stage-subtitle{display:block;margin-top:-1px;color:var(--kin)!important;font-size:9px;line-height:1.2;font-weight:700;letter-spacing:.16em;white-space:nowrap}
   .stage-subtitle[hidden]{display:none}
@@ -112,6 +112,11 @@
   .stage-count[hidden]{display:none!important}
   .stage-picker-trigger.master-stage #stageNumber{font-size:14px;color:var(--kin)}
   .stage-picker-trigger.master-stage .stage-subtitle{font-size:10px}
+  .stage-picker-trigger.master-stage .stage-detail{justify-content:space-between;gap:6px}
+  .stage-picker-trigger.master-stage .stage-left{flex:1}
+  html[lang=en] .stage-picker-trigger.master-stage #stageNumber{font-size:12px}
+  html[lang=en] .stage-picker-trigger.master-stage #stageKind{letter-spacing:0;white-space:nowrap}
+  html[lang="en"] .stage-picker-trigger.master-stage #stageNumber{font-size:13px;letter-spacing:-.07em;white-space:nowrap}
   .progress{
     width:100%;max-width:372px;display:grid;grid-template-columns:repeat(15,1fr);
     gap:5px;margin:12px 0 2px;
@@ -285,10 +290,11 @@
   .rank-badge[hidden]{display:none}
   .brand .rank-badge{position:absolute;z-index:2;top:-10px;left:0;margin:0}
   .rank-list{display:grid;gap:0;margin:14px 0 3px;text-align:left}
-  .rank-row{position:relative;display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;min-height:42px;padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.1);color:#687B8E;font-size:12px;line-height:1.35}
-  .rank-row:first-child{border-top:1px solid rgba(255,255,255,.1)}.rank-row b{display:block;width:90px;height:31px}.rank-row b svg{display:block;width:100%;height:100%;overflow:visible}.rank-row.earned{color:#D4E6EC}.rank-row.earned::before{content:'';position:absolute;left:0;width:2px;height:18px;background:var(--kin)}
+  .rank-row{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px;min-height:42px;padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.1);color:#687B8E;font-size:12px;line-height:1.35}
+  .rank-row:first-child{border-top:1px solid rgba(255,255,255,.1)}.rank-row b{display:block;width:90px;height:31px}.rank-row b svg{display:block;width:100%;height:100%;overflow:visible}.rank-row.earned{color:#D4E6EC}
   .rank-stage-link{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;text-decoration:underline;text-decoration-color:rgba(185,232,242,.38);text-underline-offset:3px;cursor:pointer}.rank-stage-link:hover{color:var(--washi);text-decoration-color:var(--washi)}.rank-stage-link:focus-visible{outline:2px solid var(--washi);outline-offset:3px;border-radius:2px}
-  .rank-condition{white-space:nowrap}.rank-condition > span{margin-left:3px}
+  .rank-condition{min-width:0;white-space:normal}.rank-condition > span{margin-left:3px}
+  .rank-stage-link{display:block;width:100%;max-width:100%;white-space:normal;overflow-wrap:anywhere}
   .stage-title span.hint-info{color:#62B8D2;font-weight:700}
   .status-metric.moves b.pulse{animation:movePulse .3s cubic-bezier(.2,.8,.25,1)}
   .playbar{
@@ -990,7 +996,7 @@ const UI_TEXT={
   },
   en:{
     pageTitle:'Wake the Daruma! — WAKE SEVEN',language:'Choose language',title:'Wake the Daruma!',
-    prev:'Previous',next:'Next',progress:'Progress through 15 puzzles',shortest:'At least',moveUnit:'moves left',moves:'Moves',
+    prev:'Prev',next:'Next',progress:'Progress through 15 puzzles',shortest:'At least',moveUnit:'moves left',moves:'Moves',
     stageMode:'Puzzles',freeMode:'Free Play',shuffle:'Shuffle',reset:'Restart',resetAll:'Stand all up',
     undo:'Undo',shortestMoves:'Moves left',hint:'Hint',remainingCheck:'Moves left ×{n}',mirror:'Mirror',rotate:'Rotate 60°',
     debugClear:'Clear this puzzle',debugUnlock14:'Daruma Training 14',debugUnlock:'Daruma Training 15',
@@ -2079,7 +2085,7 @@ function renderRankBadge(){
 function rankPathLabel(index){
   if(index===0)return tr('primaryRound');
   const volume=index;
-  return currentLang==='ja'?'名人への道・'+volumeLabel(volume)+'　'+masterSubtitle(volume):tr('allPatternsKind')+' · '+masterSubtitle(volume);
+  return currentLang==='ja'?'名人への道・'+volumeLabel(volume)+'　'+masterSubtitle(volume):tr('allPatternsKind')+' '+volumeLabel(volume)+' · '+masterSubtitle(volume);
 }
 function renderRankList(){
   const highest=highestRankIndex(),list=$('rankList');
@@ -2094,7 +2100,7 @@ function renderRankList(){
     path.className='rank-stage-link';path.type='button';path.textContent=rankPathLabel(index);title.innerHTML=rankFrameSvg(earned?rank:'？',!earned,index);
     clear.textContent=currentLang==='ja'?'クリア':'';
     path.addEventListener('click',()=>openStagePickerForRank(index));
-    condition.append(path,clear);row.append(condition,title);list.appendChild(row);
+    condition.append(path,clear);row.append(title,condition);list.appendChild(row);
   });
 }
 function openRankDialog(){
@@ -2106,7 +2112,7 @@ const primaryStageUnlocked=index=>index===0||clearedStages.has(index)||clearedSt
 const extraStageUnlocked=index=>index===0||clearedExtraStages.has(index)||clearedExtraStages.has(index-1);
 function extraRoundLabel(round){
   if(currentLang==='ja')return (['序','破','離','極'][round]||String(round+1))+'　'+masterSubtitle(round+1);
-  return masterSubtitle(round+1)||String(round+1);
+  return volumeLabel(round+1)+' · '+masterSubtitle(round+1);
 }
 function closeStagePicker(){
   $('stagePicker').hidden=true;
@@ -2256,7 +2262,7 @@ function renderStageNav(){
     else showRemaining(d,false);
   }else if(extraMode){
     const volume=Math.floor(extraIndex/STAGES.length)+1;
-    $('stageKind').textContent=currentLang==='ja'?'名人への道・'+volumeLabel(volume):tr('allPatternsKind');
+    $('stageKind').textContent=currentLang==='ja'?'名人への道・'+volumeLabel(volume):tr('allPatternsKind')+' '+volumeLabel(volume);
     $('stageNumber').textContent=masterSubtitle(volume);
     $('stageCount').textContent=(extraIndex%STAGES.length+1)+' / '+STAGES.length;
     $('stageCount').hidden=false;
@@ -2562,7 +2568,13 @@ function openMessageReview(){
   $('closeMessages').focus();
 }
 function volumeLabel(n){
-  return currentLang==='ja'?['序','破','離','極'][n-1]:tr('volumeName',{n});
+  const labels={
+    ja:['序','破','離','極'],
+    en:['I','II','III','IV'],
+    zh:['序','破','离','极'],
+    ko:['서','파','리','극']
+  };
+  return (labels[currentLang]||labels.ja)[n-1]||String(n);
 }
 function hideGameDialogs(){
   $('clearDialog').hidden=true;
