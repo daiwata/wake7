@@ -255,8 +255,8 @@
   .road-step{position:relative;display:grid;justify-items:center;gap:3px;color:#586B80;font-size:9px;line-height:1.2;text-align:center}
   .road-step:not(:last-child)::after{content:'›';position:absolute;right:-4px;top:30px;color:#607A90;font-size:17px}
   .road-dot{display:flex;flex-direction:column;align-items:center;justify-content:center;width:54px;height:82px;padding:1px;border:1px solid currentColor;border-radius:5px;font-size:14px;font-weight:800;line-height:1.18}
-  .road-course{display:block;margin-bottom:3px;color:inherit;font-size:9px;line-height:1.25;font-style:normal;font-weight:700;letter-spacing:.02em;white-space:nowrap}
-  .road-name{display:block;margin-bottom:3px;color:inherit;font-size:15px;line-height:1.32;letter-spacing:.03em}.road-dot:not(.solo){justify-content:center;padding:12px 1px 5px}.road-dot.solo .road-name{transform:translateY(3px)}.road-dot small{display:block;color:inherit;font-size:11px;line-height:1.35;font-weight:700;letter-spacing:.03em}.road-dot.solo small{display:none}.road-step.done{color:#C9A54E}.road-step.current{color:#B9E8F2}.road-step.current .road-dot{background:#183952;box-shadow:0 0 0 2px rgba(98,184,210,.22)}
+  .road-course{display:block;margin-bottom:5px;color:inherit;font-size:9px;line-height:1.25;font-style:normal;font-weight:700;letter-spacing:.02em;white-space:nowrap}
+  .road-name{display:block;margin-bottom:5px;color:inherit;font-size:15px;line-height:1.32;letter-spacing:.03em}.road-dot:not(.solo){justify-content:center;padding:12px 1px 5px}.road-dot.solo .road-name{transform:translateY(3px)}.road-dot small{display:block;color:inherit;font-size:11px;line-height:1.35;font-weight:700;letter-spacing:.03em}.road-dot.solo small{display:none}.road-step.done{color:#C9A54E}.road-step.current{color:#B9E8F2}.road-step.current .road-dot{background:#183952;box-shadow:0 0 0 2px rgba(98,184,210,.22)}
   .master-rules{margin:10px 0 0!important;padding:8px 10px;border-radius:7px;background:rgba(98,184,210,.1);color:#B9E8F2!important;font-size:12px!important;font-weight:700;text-align:left;white-space:pre-line}
   .master-seal.animate{animation:masterSeal 1.1s cubic-bezier(.18,.8,.22,1) both}
   .master-seal::before,.master-seal::after{content:"✦";position:absolute;color:#62B8D2;font-size:18px;animation:masterSpark 1.3s ease-in-out infinite alternate}
@@ -939,6 +939,7 @@ Object.assign(UI_TEXT.ja,{
   menu:'メニュー',clearMessages:'クリア後のメッセージ',messageDialogTitle:'クリア後のメッセージ',optimalFailTitle:'最短ではありません',optimalFailText:'最短手数で、もう一度挑戦しよう。',twoMovePatterns:'最短2手の盤面を見る',twoMoveTitle:'最短2手の9パターン',twoMoveText:'基本3〜11で、すべて遊べます。',twoMoveDetailTitle:'この盤面のコツ',compareBoard:'盤面をスワイプすると、ゲーム中の盤面と比べられます',playInFree:'フリーモードで遊ぶ →',backToPatterns:'一覧へ',stageModeReturn:'ステージモードへ',tipGuideTitle:'攻略のコツを見る',playThisBoard:'この盤面で遊ぶ →',
   extraClear1:'名人への道では、「離」の途中まで最短3手の問題が続きます。',
   extraClear3:'この7枚の配置のだるま起こしでは、最短4手以内に必ずクリアできる仕組みになっています。',
+  extraClear30:'不立文字（ふりゅうもんじ）は、悟りは文字や言葉だけでは伝えられない、という禅の考え方です。',
   extraClear7:'名人への道の終盤では、残り最短手数が表示されません。最短2手の盤面を見分ける感覚を、今のうちに身につけておこう。',
   extraClear9:'全ての最短4手盤面で、6本の軸をランダムに選び、最短3手になる向きへ回すと、約78％で最短3手になります。',
   extraClear33:'最短3手の盤面で、12通りの回し方をランダムに選ぶと、最短2手になるのは約17％、そのまま最短3手は約56％、最短4手になるのは約27％です。',
@@ -2122,7 +2123,7 @@ function stageClearTextAt(mode,index){
   if(mode){
     if(CLEAR_TWO_MOVE_CARDS[index]!==undefined)return tr('twoMoveDiscovery',{n:CLEAR_TWO_MOVE_CARDS[index]+1});
     if(CLEAR_GUIDE_CARDS[index])return tr(CLEAR_GUIDE_CARDS[index].text);
-    const extraTips={0:'stageClear6',1:'extraClear2',2:'extraClear3',5:'extraClear6',6:'extraClear7',10:'stageClear9',13:'extraClear54',15:'extraClear25',22:'extraClear23',30:'extraClear4',32:'extraClear33',34:'extraClear35',35:'extraClear36',40:'extraClear41',42:'extraClear43',45:'extraClear18',46:'extraClear47',47:'extraClear48',48:'extraClear49',51:'extraFourthOneCheck',53:'extraClear53',56:'extraFourthNoCheck',57:'extraClear56',58:'extraFinalNotice'};
+    const extraTips={0:'stageClear6',1:'extraClear2',2:'extraClear3',5:'extraClear6',6:'extraClear7',10:'stageClear9',13:'extraClear54',15:'extraClear25',22:'extraClear23',30:'extraClear30',31:'extraClear4',32:'extraClear33',34:'extraClear35',35:'extraClear36',40:'extraClear41',42:'extraClear43',45:'extraClear18',46:'extraClear47',47:'extraClear48',48:'extraClear49',51:'extraFourthOneCheck',53:'extraClear53',56:'extraFourthNoCheck',57:'extraClear56',58:'extraFinalNotice'};
     return extraTips[index]?tr(extraTips[index]):'';
   }
   if(index===0)return tr('stageClear1');
@@ -2147,7 +2148,7 @@ function stageClearArtAt(mode,index){
   if(mode){
     if(CLEAR_TWO_MOVE_CARDS[index]!==undefined)return 'twoMoveCard:'+CLEAR_TWO_MOVE_CARDS[index];
     if(CLEAR_GUIDE_CARDS[index])return 'guideCard:'+CLEAR_GUIDE_CARDS[index].state.join('');
-    return ({0:'rise',1:'count',5:'chants',10:'eyes',13:'fuku',15:'legend',22:'pigment',32:'moveGraph',34:'paper',40:'market',42:'crane',45:'dharma',50:'monaka',53:'shelfFall',57:'darumaOtoshi'})[index]||'';
+    return ({0:'rise',1:'count',5:'chants',10:'eyes',13:'fuku',15:'legend',22:'pigment',32:'moveGraph',34:'paper',40:'market',42:'crane',45:'dharma',53:'shelfFall',57:'darumaOtoshi'})[index]||'';
   }
   return ({3:'remaining',4:'controls',5:'theories',7:'hintButton',8:'craft',9:'navigation',10:'red',12:'monaka'})[index]||'';
 }
@@ -2293,7 +2294,7 @@ function renderMessageReview(){
     }else if(entry.master==='mastery'){
       $('messageMasterSealLabel').textContent=masterPath().ranks[4];setSealColor(seal,4);$('messageDialogTitle').textContent=tr('masteryTitle');$('messageDialogPlace').textContent=messageReviewPlace(entry);rankText.hidden=false;rankText.textContent=rankEarnedText(masterPath().ranks[4]);masterText.hidden=false;masterText.textContent=tr('masteryText');
     }else{
-      const nextRules={ja:['「破」からは、ヒントが使えなくなります。','「離」では途中から最短4手の問題です。\nスワイプ中は残り最短手数が「？」になります。','名人への道の終盤では、残り最短手数が表示されません。\nかわりに回数限定で「残り手数」のボタンが使えますが、これも途中から回数が減っていきます。']}[currentLang]||[];
+      const nextRules={ja:['「破」からは、ヒントが使えなくなります。','「離」では途中から最短4手の問題です。\nスワイプ中は残り最短手数が「？」になります。','「極」では残り最短手数が表示されません。\nかわりに回数限定で「残り手数」のボタンが使えますが、これも途中から使用回数が減っていきます。']}[currentLang]||[];
       const clearName=currentLang==='ja'?'名人への道・'+volumeLabel(volume)+'　'+masterSubtitle(volume):volumeLabel(volume)+'　'+masterSubtitle(volume);
       $('messageMasterSealLabel').textContent=rankForVolume(volume);setSealColor(seal,volume);$('messageDialogTitle').textContent=tr('volumeClearTitle',{n:clearName});$('messageDialogPlace').textContent=messageReviewPlace(entry);rankText.hidden=false;rankText.textContent=rankEarnedText(rankForVolume(volume));masterText.hidden=false;masterText.textContent=nextRules[volume-1]||tr('volumeClearText');
     }
@@ -2565,7 +2566,7 @@ function showMasterDialog(kind='primary'){
     seal.classList.add('rank-seal');
     const clearName=currentLang==='ja'?'名人への道・'+volumeLabel(volume)+'　'+masterSubtitle(volume):volumeLabel(volume)+'　'+masterSubtitle(volume);
     $('masterDialogTitle').textContent=tr('volumeClearTitle',{n:clearName});
-    const nextRules={ja:['「破」からは、ヒントが使えなくなります。','「離」では途中から最短4手の問題です。\nスワイプ中は残り最短手数が「？」になります。','名人への道の終盤では、残り最短手数が表示されません。\nかわりに回数限定で「残り手数」のボタンが使えますが、これも途中から回数が減っていきます。'],en:['Hints are unavailable from Volume 2.','Volume 3 introduces four-move puzzles.\nMoves left are hidden while swiping.','Volume 4 hides moves left.\nCheck it twice for seven puzzles, once for five, and never for the final three.']}[currentLang]||[];
+    const nextRules={ja:['「破」からは、ヒントが使えなくなります。','「離」では途中から最短4手の問題です。\nスワイプ中は残り最短手数が「？」になります。','「極」では残り最短手数が表示されません。\nかわりに回数限定で「残り手数」のボタンが使えますが、これも途中から使用回数が減っていきます。'],en:['Hints are unavailable from Volume 2.','Volume 3 introduces four-move puzzles.\nMoves left are hidden while swiping.','Volume 4 hides moves left.\nCheck it twice for seven puzzles, once for five, and never for the final three.']}[currentLang]||[];
     const nextRule=nextRules[volume-1]||tr('volumeClearText');
     rankText.hidden=false;rankText.textContent=rankEarnedText(rank);
     $('masterDialogText').textContent=nextRule;
