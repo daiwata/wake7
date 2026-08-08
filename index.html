@@ -266,6 +266,8 @@
   .road-dot{display:flex;flex-direction:column;align-items:center;justify-content:center;width:54px;height:82px;padding:1px;border:1px solid currentColor;border-radius:5px;font-size:14px;font-weight:800;line-height:1.18}
   .road-course{display:block;margin-bottom:5px;color:inherit;font-size:9px;line-height:1.25;font-style:normal;font-weight:700;letter-spacing:.02em;white-space:nowrap}
   .road-name{display:block;margin-bottom:5px;color:inherit;font-size:15px;line-height:1.32;letter-spacing:.03em}.road-dot:not(.solo){justify-content:center;padding:12px 1px 5px}.road-dot.solo .road-name{transform:translateY(3px)}.road-dot small{display:block;color:inherit;font-size:11px;line-height:1.35;font-weight:700;letter-spacing:.03em}.road-dot.solo small{display:none}.road-step.done{color:#C9A54E}.road-step.current{color:#B9E8F2}.road-step.current .road-dot{background:#183952;box-shadow:0 0 0 2px rgba(98,184,210,.22)}
+  html[lang=en] .road-dot.solo .road-name{font-size:11px;line-height:1.2}
+  html[lang=en] .road-dot small{font-size:8.5px;line-height:1.18;letter-spacing:-.03em}
   .master-rules{margin:10px 0 0!important;padding:8px 10px;border-radius:7px;background:rgba(98,184,210,.1);color:#B9E8F2!important;font-size:12px!important;font-weight:700;text-align:left;white-space:pre-line}
   .master-seal.animate{animation:masterSeal 1.1s cubic-bezier(.18,.8,.22,1) both}
   .master-seal::before,.master-seal::after{content:"✦";position:absolute;color:#62B8D2;font-size:18px;animation:masterSpark 1.3s ease-in-out infinite alternate}
@@ -293,8 +295,8 @@
   .rank-row{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px;min-height:42px;padding:7px 8px;border-bottom:1px solid rgba(255,255,255,.1);color:#687B8E;font-size:12px;line-height:1.35}
   .rank-row:first-child{border-top:1px solid rgba(255,255,255,.1)}.rank-row b{display:block;width:90px;height:31px}.rank-row b svg{display:block;width:100%;height:100%;overflow:visible}.rank-row.earned{color:#D4E6EC}
   .rank-stage-link{padding:0;border:0;background:none;color:inherit;font:inherit;text-align:left;text-decoration:underline;text-decoration-color:rgba(185,232,242,.38);text-underline-offset:3px;cursor:pointer}.rank-stage-link:hover{color:var(--washi);text-decoration-color:var(--washi)}.rank-stage-link:focus-visible{outline:2px solid var(--washi);outline-offset:3px;border-radius:2px}
-  .rank-condition{min-width:0;white-space:normal}.rank-condition > span{margin-left:3px}
-  .rank-stage-link{display:block;width:100%;max-width:100%;white-space:normal;overflow-wrap:anywhere}
+  .rank-condition{min-width:0;white-space:normal}.rank-condition > span{white-space:nowrap}
+  .rank-stage-link{display:inline;max-width:100%;white-space:normal;overflow-wrap:anywhere}
   .stage-title span.hint-info{color:#62B8D2;font-weight:700}
   .status-metric.moves b.pulse{animation:movePulse .3s cubic-bezier(.2,.8,.25,1)}
   .playbar{
@@ -2044,7 +2046,7 @@ const EXTRA_ROUNDS=Math.ceil(EXTRA_STAGES.length/STAGES.length);
 const allPrimaryCleared=()=>STAGES.every((_,i)=>clearedStages.has(i));
 const MASTER_PATH={
   ja:{subtitles:['七転八起','面壁九年','不立文字','達磨大師'],ranks:['一人前','不屈','熟練','師範','名人'],earned:'称号「{rank}」を獲得しました。'},
-  en:{subtitles:['Seven Falls, Eight Rises','Nine Years Facing the Wall','Beyond Words','Bodhidharma'],ranks:['Adept','Unyielding','Seasoned','Instructor','Master'],earned:'You earned the title “{rank}”.'},
+  en:{subtitles:['Seven Falls, Eight Rises','Nine Years Facing the Wall','Beyond Words','Bodhidharma'],roadSubtitles:['Seven Falls','Nine Years','Beyond Words','Bodhidharma'],ranks:['Adept','Unyielding','Seasoned','Instructor','Master'],earned:'You earned the title “{rank}”.'},
   zh:{subtitles:['七转八起','面壁九年','不立文字','达摩大师'],ranks:['独当一面','不屈','熟练','师范','名人'],earned:'获得称号“{rank}”。'},
   ko:{subtitles:['칠전팔기','면벽구년','불립문자','달마대사'],ranks:['일인분','불굴','숙련','사범','명인'],earned:'칭호 “{rank}”을(를) 획득했습니다.'}
 };
@@ -2098,7 +2100,7 @@ function renderRankList(){
     const condition=document.createElement('span'),path=document.createElement('button'),clear=document.createElement('span'),title=document.createElement('b');
     condition.className='rank-condition';
     path.className='rank-stage-link';path.type='button';path.textContent=rankPathLabel(index);title.innerHTML=rankFrameSvg(earned?rank:'？',!earned,index);
-    clear.textContent=currentLang==='ja'?'クリア':'';
+    clear.textContent=currentLang==='ja'?'　クリア':'';
     path.addEventListener('click',()=>openStagePickerForRank(index));
     condition.append(path,clear);row.append(title,condition);list.appendChild(row);
   });
@@ -2828,8 +2830,9 @@ function renderMasterRoadmap(kind){
   if(kind==='primary')rules.textContent=masterCommonRules();
 }
 function masterRoadmapMarkup(current){
+  const path=masterPath();
   const labels=[tr('primaryRound'),volumeLabel(1),volumeLabel(2),volumeLabel(3),volumeLabel(4)];
-  const subs=['',masterSubtitle(1),masterSubtitle(2),masterSubtitle(3),masterSubtitle(4)];
+  const subs=['',...(path.roadSubtitles||path.subtitles)];
   return labels.map((label,i)=>{
     const displayLabel=!subs[i]&&currentLang==='ja'?(label==='だるま修行'?'だるま<br>修行':label.replace('への','<br>への')):label;
     const course=currentLang==='ja'&&i>0?'<i class="road-course">名人への道</i>':'';
