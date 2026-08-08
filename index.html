@@ -233,7 +233,16 @@
   #introBoard .guide-happy .open,#introBoard .guide-happy .shut{display:none}
   #introBoard .guide-happy .happy{display:block}
   .master-seal{position:relative;width:86px;height:86px;margin:0 auto 6px;border:3px solid var(--kin);border-radius:50%;color:var(--kin);display:grid;place-items:center;font-size:27px}
+  .master-seal[hidden]{display:none}
   .master-seal.rank-seal{font-size:18px;font-weight:800;letter-spacing:.08em}
+  #masterDialog .game-dialog{max-height:calc(100dvh - 32px);overflow-y:auto}
+  .master-roadmap{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin:14px -8px 8px;align-items:start}
+  .master-roadmap[hidden]{display:none}
+  .road-step{position:relative;display:grid;justify-items:center;gap:3px;color:#586B80;font-size:8px;line-height:1.2;text-align:center}
+  .road-step:not(:last-child)::after{content:'›';position:absolute;right:-4px;top:7px;color:#607A90;font-size:17px}
+  .road-dot{display:grid;place-items:center;width:25px;height:25px;border:1px solid currentColor;border-radius:50%;font-size:10px;font-weight:800}
+  .road-step small{display:block;color:inherit;font-size:7px;line-height:1.15}.road-step.done{color:#C9A54E}.road-step.current{color:#B9E8F2}.road-step.current .road-dot{background:#183952;box-shadow:0 0 0 2px rgba(98,184,210,.22)}
+  .master-rules{margin:10px 0 0!important;padding:8px 10px;border-radius:7px;background:rgba(98,184,210,.1);color:#B9E8F2!important;font-size:12px!important;font-weight:700;text-align:left;white-space:pre-line}
   .master-seal.animate{animation:masterSeal 1.1s cubic-bezier(.18,.8,.22,1) both}
   .master-seal::before,.master-seal::after{content:"✦";position:absolute;color:#62B8D2;font-size:18px;animation:masterSpark 1.3s ease-in-out infinite alternate}
   .master-seal::before{left:-23px;top:8px}.master-seal::after{right:-22px;bottom:5px;animation-delay:.35s}
@@ -480,8 +489,11 @@
 </div>
 <div class="game-dialog-backdrop" id="messageDialog" hidden>
   <div class="game-dialog" role="dialog" aria-modal="true" aria-labelledby="messageDialogTitle">
+    <div class="master-seal rank-seal" id="messageMasterSeal" hidden></div>
     <h2 id="messageDialogTitle">クリア後のメッセージ</h2>
     <p id="messageDialogPlace"></p>
+    <div class="master-roadmap" id="messageRoadmap" hidden></div>
+    <p class="master-rules" id="messageRules" hidden></p>
     <div class="clear-tip-illustration" id="messageIllustration" hidden></div>
     <div id="messageDialogText"><span id="messageDialogTextBody"></span></div>
     <div class="dialog-actions"><button class="chip" id="messagePrev">← 前へ</button><button class="chip" id="closeMessages">閉じる</button><button class="chip" id="messageNext">次へ →</button></div>
@@ -499,6 +511,8 @@
     <div class="master-seal" id="masterSeal">突破</div>
     <h2 id="masterDialogTitle">はじめの15問 クリア！</h2>
     <p id="masterDialogText">名人への道が開かれました。</p>
+    <div class="master-roadmap" id="masterRoadmap"></div>
+    <p class="master-rules" id="masterRules" hidden></p>
     <div class="dialog-actions"><button class="chip" id="masterClose">閉じる</button><button class="chip on" id="masterStart">名人への道へ →</button></div>
   </div>
 </div>
@@ -978,6 +992,10 @@ Object.assign(UI_TEXT.ja,{extraClear56:'だるま落としは江戸時代から�
 Object.assign(UI_TEXT.en,{extraClear56:'Daruma otoshi has been a beloved toy since the Edo period. Hit the body blocks with a hammer, without knocking over the daruma head.'});
 Object.assign(UI_TEXT.zh,{extraClear56:'达摩落是自江户时代以来深受喜爱的玩具。用小锤敲击身体的木块，同时不能让最上面的达摩脸倒下。'});
 Object.assign(UI_TEXT.ko,{extraClear56:'다루마오토시는 에도 시대부터 사랑받은 장난감이에요. 망치로 몸통 블록을 쳐서, 맨 위 다루마 얼굴을 넘어뜨리지 않고 빼냅니다.'});
+Object.assign(UI_TEXT.ja,{extraFourthOneCheck:'次から「残り手数」ボタンは1回だけ使えます。',extraFourthNoCheck:'ラスト3問では「残り手数」ボタンが使えません。',extraFinalNotice:'次が名人への道、最終問題です。'});
+Object.assign(UI_TEXT.en,{extraFourthOneCheck:'From the next puzzle, Moves Left can be checked only once.',extraFourthNoCheck:'For the final three puzzles, Moves Left cannot be checked.',extraFinalNotice:'The next puzzle is the final challenge.'});
+Object.assign(UI_TEXT.zh,{extraFourthOneCheck:'从下一题起，“剩余步数”只能查看一次。',extraFourthNoCheck:'最后3题不能查看“剩余步数”。',extraFinalNotice:'下一题是名人之路的最终问题。'});
+Object.assign(UI_TEXT.ko,{extraFourthOneCheck:'다음 문제부터 남은 수는 한 번만 확인할 수 있어요.',extraFourthNoCheck:'마지막 3문제에서는 남은 수를 확인할 수 없어요.',extraFinalNotice:'다음 문제가 명인의 길 최종 문제입니다.'});
 Object.assign(UI_TEXT.ja,{quizTitle:'だるまクイズ',quizCorrect:'正解！',quizWrong:'おしい！',quizContinue:'つづける →'});
 Object.assign(UI_TEXT.en,{quizTitle:'Daruma Quiz',quizCorrect:'Correct!',quizWrong:'Not quite!',quizContinue:'Continue →'});
 Object.assign(UI_TEXT.zh,{quizTitle:'不倒翁小测验',quizCorrect:'答对了！',quizWrong:'差一点！',quizContinue:'继续 →'});
@@ -1021,7 +1039,7 @@ const DARUMA_QUIZ_TRANSLATIONS={
     {q:'역할을 마친 다루마는 보통 어떻게 할까?',a:['강에 띄운다','절에서 공양하고 태운다','땅에 묻는다','되판다'],correct:1,note:'다루마 공양입니다. 연말연시에 절이나 신사에 돌려드리고, 감사와 함께 태워 올립니다.'}
   ]
 };
-const QUIZ_STAGES={11:0,20:1,28:4,38:2,51:5,55:3};
+const QUIZ_STAGES={11:0,20:1,28:4,38:2,49:5,55:3};
 
 /* ---- 盤面 ---- */
 const svg=document.getElementById('board'), $=id=>document.getElementById(id);
@@ -1999,7 +2017,7 @@ function stageClearTextAt(mode,index){
   if(mode){
     if(CLEAR_TWO_MOVE_CARDS[index]!==undefined)return tr('twoMoveDiscovery',{n:CLEAR_TWO_MOVE_CARDS[index]+1});
     if(CLEAR_GUIDE_CARDS[index])return tr(CLEAR_GUIDE_CARDS[index].text);
-    const extraTips={0:'extraClear1',1:'extraClear2',2:'extraClear3',3:'extraClear4',5:'extraClear6',6:'extraClear7',8:'extraClear9',10:'stageClear9',13:'extraClear54',17:'extraClear18',22:'extraClear23',24:'extraClear25',32:'extraClear33',34:'extraClear35',35:'extraClear36',40:'extraClear41',42:'extraClear43',45:'extraClear46',46:'extraClear47',47:'extraClear48',48:'extraClear49',50:'extraClear50',53:'extraClear53',56:'extraClear56'};
+    const extraTips={0:'extraClear1',1:'extraClear2',2:'extraClear3',3:'extraClear4',5:'extraClear6',6:'extraClear7',8:'extraClear9',10:'stageClear9',13:'extraClear54',17:'extraClear18',22:'extraClear23',24:'extraClear25',32:'extraClear33',34:'extraClear35',35:'extraClear36',40:'extraClear41',42:'extraClear43',45:'extraClear46',46:'extraClear47',47:'extraClear48',48:'extraClear49',50:'extraClear50',51:'extraFourthOneCheck',53:'extraClear53',56:'extraFourthNoCheck',57:'extraClear56',58:'extraFinalNotice'};
     return extraTips[index]?tr(extraTips[index]):'';
   }
   if(index===0)return tr('stageClear1');
@@ -2024,7 +2042,7 @@ function stageClearArtAt(mode,index){
   if(mode){
     if(CLEAR_TWO_MOVE_CARDS[index]!==undefined)return 'twoMoveCard:'+CLEAR_TWO_MOVE_CARDS[index];
     if(CLEAR_GUIDE_CARDS[index])return 'guideCard:'+CLEAR_GUIDE_CARDS[index].state.join('');
-    return ({1:'count',5:'chants',10:'eyes',13:'fuku',17:'dharma',22:'pigment',24:'legend',32:'moveGraph',34:'paper',40:'market',42:'crane',50:'monaka',53:'shelfFall',56:'darumaOtoshi'})[index]||'';
+    return ({1:'count',5:'chants',10:'eyes',13:'fuku',17:'dharma',22:'pigment',24:'legend',32:'moveGraph',34:'paper',40:'market',42:'crane',50:'monaka',53:'shelfFall',57:'darumaOtoshi'})[index]||'';
   }
   return ({3:'remaining',6:'rise',8:'theories',10:'red',12:'craft'})[index]||'';
 }
@@ -2126,28 +2144,53 @@ function buildMessageReviewEntries(){
   const entries=[];
   for(let i=0;i<STAGES.length;i++){
     if(!clearedStages.has(i))continue;
+    if(i===14){entries.push({master:'primary',extra:false,index:i});continue;}
     const text=stageClearTextAt(false,i);if(text)entries.push({extra:false,index:i,text,art:stageClearArtAt(false,i)});
   }
   for(let i=0;i<EXTRA_STAGES.length;i++){
     if(!clearedExtraStages.has(i))continue;
+    if((i+1)%STAGES.length===0){entries.push({master:i===EXTRA_STAGES.length-1?'mastery':'volume',extra:true,index:i});continue;}
     const text=stageClearTextAt(true,i);if(text)entries.push({extra:true,index:i,text,art:stageClearArtAt(true,i)});
   }
   return entries;
 }
 function messageReviewPlace(entry){
-  if(!entry.extra)return currentLang==='ja'?'問題 '+(entry.index+1):tr('stageAria',{n:entry.index+1,par:STAGES[entry.index].par});
+  if(!entry.extra){
+    if(currentLang!=='ja')return tr('stageAria',{n:entry.index+1,par:STAGES[entry.index].par});
+    const group=entry.index<3?'入門':entry.index<12?'基本':'挑戦';
+    const number=entry.index<3?entry.index+1:entry.index<12?entry.index-2:entry.index-11;
+    return group+' 第'+number+'問 クリア';
+  }
   const volume=Math.floor(entry.index/STAGES.length)+1;
-  return currentLang==='ja'?'名人への道 '+volumeLabel(volume)+'・第'+(entry.index%STAGES.length+1)+'問':tr('extraStageAria',{n:entry.index+1,total:EXTRA_STAGES.length});
+  return currentLang==='ja'?'名人への道 '+volumeLabel(volume)+'・第'+(entry.index%STAGES.length+1)+'問 クリア':tr('extraStageAria',{n:entry.index+1,total:EXTRA_STAGES.length});
 }
 function renderMessageReview(){
   const entry=messageReviewEntries[messageReviewIndex];if(!entry)return;
-  const art=entry.art,illustration=$('messageIllustration');
+  const art=entry.art||'',illustration=$('messageIllustration'),roadmap=$('messageRoadmap'),rules=$('messageRules'),seal=$('messageMasterSeal');
+  roadmap.hidden=!entry.master;rules.hidden=true;
+  seal.hidden=!entry.master;
+  $('messageDialogText').hidden=!!entry.master;
+  if(entry.master){
+    const volume=entry.master==='primary'?0:Math.ceil((entry.index+1)/STAGES.length);
+    const current=entry.master==='primary'?1:entry.master==='mastery'?5:Math.min(4,volume+1);
+    roadmap.innerHTML=masterRoadmapMarkup(current);
+    if(entry.master==='primary'){
+      seal.textContent=masterPath().ranks[0];$('messageDialogTitle').textContent=tr('masterTitle');$('messageDialogPlace').textContent=messageReviewPlace(entry)+'\n'+rankEarnedText(masterPath().ranks[0])+'\n'+tr('masterText');rules.hidden=false;rules.textContent=masterCommonRules();
+    }else if(entry.master==='mastery'){
+      seal.textContent=masterPath().ranks[4];$('messageDialogTitle').textContent=tr('masteryTitle');$('messageDialogPlace').textContent=messageReviewPlace(entry)+'\n'+rankEarnedText(masterPath().ranks[4])+'\n'+tr('masteryText');
+    }else{
+      const nextRules={ja:['二の巻からは、ヒントが使えなくなります。','三の巻では途中から最短4手の問題です。\nスワイプ中は残り最短手数が「？」になります。','四の巻では残り最短手数が表示されません。\n「残り手数」ボタンは最初の7問で2回、次の5問で1回。最後の3問では使えません。']}[currentLang]||[];
+      seal.textContent=rankForVolume(volume);$('messageDialogTitle').textContent=tr('volumeClearTitle',{n:volumeLabel(volume)+'　'+masterSubtitle(volume)});$('messageDialogPlace').textContent=messageReviewPlace(entry)+'\n'+rankEarnedText(rankForVolume(volume))+'\n'+(nextRules[volume-1]||tr('volumeClearText'));
+    }
+  }else{
+  $('messageDialogText').hidden=false;
   $('messageDialogTitle').textContent=tr('messageDialogTitle');
   $('messagePrev').textContent='← '+tr('prev');
   $('messageNext').textContent=tr('next')+' →';
   $('closeMessages').textContent=tr('close');
   $('messageDialogPlace').textContent=messageReviewPlace(entry);
   $('messageDialogTextBody').textContent=entry.text;
+  }
   illustration.classList.toggle('move-graph',art==='moveGraph');
   illustration.classList.toggle('board-card',art.startsWith('twoMoveCard:')||art.startsWith('guideCard:'));
   illustration.innerHTML=art?tipArt(art):'';
@@ -2378,7 +2421,9 @@ function showMasterDialog(kind='primary'){
     seal.textContent=rank;
     seal.classList.add('rank-seal');
     $('masterDialogTitle').textContent=tr('volumeClearTitle',{n:volumeLabel(volume)+'　'+masterSubtitle(volume)});
-    $('masterDialogText').textContent=rankEarnedText(rank)+'\n'+(extraIndex===44?tr('extraClear45'):tr('volumeClearText'));
+    const nextRules={ja:['二の巻からは、ヒントが使えなくなります。','三の巻では途中から最短4手の問題です。\nスワイプ中は残り最短手数が「？」になります。','四の巻では残り最短手数が表示されません。\n「残り手数」ボタンは最初の7問で2回、次の5問で1回。最後の3問では使えません。'],en:['Hints are unavailable from Volume 2.','Volume 3 introduces four-move puzzles.\nMoves left are hidden while swiping.','Volume 4 hides moves left.\nCheck it twice for seven puzzles, once for five, and never for the final three.']}[currentLang]||[];
+    const nextRule=nextRules[volume-1]||tr('volumeClearText');
+    $('masterDialogText').textContent=rankEarnedText(rank)+'\n'+nextRule;
     $('masterStart').textContent=tr('volumeStart');
   }else{
     seal.textContent=masterPath().ranks[4];
@@ -2387,6 +2432,7 @@ function showMasterDialog(kind='primary'){
     $('masterDialogText').textContent=rankEarnedText(masterPath().ranks[4])+'\n'+tr('masteryText');
     $('masterStart').textContent=tr('masteryStart');
   }
+  renderMasterRoadmap(kind);
   $('masterDialog').hidden=false;
   seal.classList.remove('animate');
   void seal.offsetWidth;
@@ -2398,6 +2444,18 @@ function returnToStageMode(){
   else if(lastStageMode.extra)loadExtraStage(lastStageMode.index);
   else loadStage(lastStageMode.index);
 }
+function renderMasterRoadmap(kind){
+  const current=kind==='primary'?1:kind==='volume'?Math.min(4,Math.ceil((extraIndex+1)/STAGES.length)+1):5;
+  $('masterRoadmap').innerHTML=masterRoadmapMarkup(current);
+  const rules=$('masterRules');rules.hidden=kind!=='primary';
+  if(kind==='primary')rules.textContent=masterCommonRules();
+}
+function masterRoadmapMarkup(current){
+  const labels=[tr('primaryRound'),volumeLabel(1),volumeLabel(2),volumeLabel(3),volumeLabel(4)];
+  const subs=['',masterSubtitle(1),masterSubtitle(2),masterSubtitle(3),masterSubtitle(4)];
+  return labels.map((label,i)=>'<div class="road-step '+(i+1<current?'done':i+1===current?'current':'')+'"><span class="road-dot">'+(i===0?'15':i+1)+'</span><span>'+label+'</span><small>'+subs[i]+'</small></div>').join('');
+}
+function masterCommonRules(){return currentLang==='ja'?'名人への道の共通ルール\n・最短手数でクリアする\n・巻が進むほど、使える情報が減っていきます':'Path to Mastery rules\n• Clear in the fewest moves\n• Each volume gives you less information';}
 $('prevStage').addEventListener('click',()=>{
   if(freeMode||customMode){returnToStageMode();return;}
   if(extraMode){
