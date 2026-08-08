@@ -243,6 +243,7 @@
   .tip-fill{fill:#62B8D2}.tip-gold{fill:#C9A54E}.tip-text{fill:#C9A54E;font:700 12px sans-serif;letter-spacing:.04em}.tip-caption{fill:#B9E8F2;font:700 13px sans-serif}
   .dialog-actions{display:flex;justify-content:center;gap:8px;margin-top:18px}
   .dialog-actions .chip{padding:9px 15px}
+  .dialog-actions .chip:disabled{background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.07);color:#536276;opacity:.52;cursor:not-allowed}
   .intro-board-wrap{position:relative;width:min(100%,260px);margin:8px auto -2px}
   #introBoard{display:block;width:100%;height:auto}
   #introBoard .intro-swipe{fill:#62B8D2;filter:drop-shadow(0 0 3px rgba(98,184,210,.8))}
@@ -261,6 +262,12 @@
   #masterDialog .game-dialog{max-height:calc(100dvh - 32px);overflow-y:auto}
   .master-roadmap{display:grid;grid-template-columns:repeat(5,1fr);gap:3px;margin:24px -8px 30px;align-items:start}
   .master-roadmap[hidden]{display:none}
+  .mastery-board{display:grid;place-items:center;height:200px;margin:8px 0 20px;overflow:hidden}
+  .mastery-board[hidden]{display:none}
+  .mastery-board svg{display:block;width:230px;height:200px;overflow:visible}
+  .mastery-board .tile.stand .hex{fill:#F6DE93;stroke:#C89C35}
+  .mastery-board .tile .open,.mastery-board .tile .shut{display:none}
+  .mastery-board .tile .happy{display:block}
   .road-step{position:relative;display:grid;justify-items:center;gap:3px;color:#586B80;font-size:9px;line-height:1.2;text-align:center}
   .road-step:not(:last-child)::after{content:'›';position:absolute;right:-4px;top:30px;color:#607A90;font-size:17px}
   .road-dot{display:flex;flex-direction:column;align-items:center;justify-content:center;width:54px;height:82px;padding:1px;border:1px solid currentColor;border-radius:5px;font-size:14px;font-weight:800;line-height:1.18}
@@ -533,6 +540,7 @@
     <p id="messageRankText" hidden></p>
     <div class="master-seal rank-seal" id="messageMasterSeal" hidden><span class="seal-label" id="messageMasterSealLabel"></span><i class="seal-spark one">✦</i><i class="seal-spark two">✦</i></div>
     <p id="messageMasterText" hidden></p>
+    <div class="mastery-board" id="messageMasteryBoard" hidden></div>
     <div class="master-roadmap" id="messageRoadmap" hidden></div>
     <p class="master-rules" id="messageRules" hidden></p>
     <div class="clear-tip-illustration" id="messageIllustration" hidden></div>
@@ -559,6 +567,7 @@
     <p id="masterRankText" hidden></p>
     <div class="master-seal" id="masterSeal"><span class="seal-label" id="masterSealLabel">突破</span><i class="seal-spark one">✦</i><i class="seal-spark two">✦</i></div>
     <p id="masterDialogText">名人への道が開かれました。</p>
+    <div class="mastery-board" id="masteryBoard" hidden></div>
     <div class="master-roadmap" id="masterRoadmap"></div>
     <p class="master-rules" id="masterRules" hidden></p>
     <div class="dialog-actions"><button class="chip" id="masterClose">閉じる</button><button class="chip on" id="masterStart">名人への道へ →</button></div>
@@ -1673,6 +1682,72 @@ function restoreCurrentStage(){
     loadStage(saved.index);
   }else loadStage(0);
 }
+function serializeBoardSnapshot(s){
+  return {o:[...s.o],s:[...s.s],t:s.t.map(el=>baseTiles.indexOf(el)),m:s.m};
+}
+function serializeActiveBoard(){
+  return {
+    o:[...ori],s:[...spin],t:tileEls.map(el=>baseTiles.indexOf(el)),m:moves,best,
+    history:history.map(serializeBoardSnapshot),initialState:currentInitialState,initialPar:currentInitialPar,
+    clearShown,fourthChecksUsed,fourthDistanceRevealed
+  };
+}
+function validSavedTiles(tiles){
+  return Array.isArray(tiles)&&tiles.length===N&&tiles.every(i=>Number.isInteger(i)&&i>=0&&i<N)&&new Set(tiles).size===N;
+}
+function validSavedBoard(data){
+  return data&&Array.isArray(data.o)&&data.o.length===N&&data.o.every(v=>Number.isInteger(v)&&v>=0&&v<3)
+    &&Array.isArray(data.s)&&data.s.length===N&&data.s.every(Number.isInteger)&&validSavedTiles(data.t);
+}
+function restoreSavedBoard(data){
+  if(!validSavedBoard(data))return false;
+  cancelTileAnimations();clearHintVisuals();clearTimeout(clearTimer);
+  ori=Uint8Array.from(data.o);spin=Int16Array.from(data.s);tileEls=data.t.map(i=>baseTiles[i]);
+  moves=Number.isInteger(data.m)&&data.m>=0?data.m:0;
+  best=Number.isInteger(data.best)&&data.best>=0?data.best:SOLVER.dist[enc(ori)];
+  currentInitialState=Number.isInteger(data.initialState)?data.initialState:enc(ori);
+  currentInitialPar=Number.isInteger(data.initialPar)?data.initialPar:best;
+  history=(Array.isArray(data.history)?data.history:[]).filter(validSavedBoard).map(h=>({o:Uint8Array.from(h.o),s:Int16Array.from(h.s),t:h.t.map(i=>baseTiles[i]),m:h.m}));
+  clearShown=!!data.clearShown||isSolved();
+  fourthChecksUsed=Number.isInteger(data.fourthChecksUsed)?data.fourthChecksUsed:0;
+  fourthDistanceRevealed=!!data.fourthDistanceRevealed;
+  fourthHintPreview=false;fourthHintDistance=null;busy=false;drag=null;
+  svg.classList.remove('spinning','selecting','celebrating');
+  baseTiles.forEach(el=>el.classList.remove('selected'));
+  $('clearNext').hidden=!clearShown;
+  paint();
+  return true;
+}
+function saveActiveSession(){
+  const mode=customMode?'custom':freeMode?'free':'stage';
+  const payload={
+    mode,editingBoard,extra:extraMode,index:extraMode?extraIndex:stageIndex,
+    lastStageMode,board:serializeActiveBoard()
+  };
+  try{localStorage.setItem('wake7-active-session',JSON.stringify(payload));}catch(_){ }
+}
+function restoreActiveSession(){
+  let saved=null;
+  try{saved=JSON.parse(localStorage.getItem('wake7-active-session')||'null');}catch(_){ }
+  if(!saved||!validSavedBoard(saved.board)){restoreCurrentStage();return;}
+  const canRestoreExtra=saved.extra===true&&Number.isInteger(saved.index)&&saved.index>=0&&saved.index<EXTRA_STAGES.length&&allPrimaryCleared()&&extraStageUnlocked(saved.index);
+  const canRestoreStage=saved.extra===false&&Number.isInteger(saved.index)&&saved.index>=0&&saved.index<STAGES.length&&primaryStageUnlocked(saved.index);
+  if(saved.mode==='stage'){
+    if(canRestoreExtra)loadExtraStage(saved.index);
+    else if(canRestoreStage)loadStage(saved.index);
+    else{restoreCurrentStage();return;}
+  }else if(saved.mode==='free'){
+    extraMode=false;freeMode=true;customMode=false;editingBoard=false;
+  }else if(saved.mode==='custom'){
+    extraMode=false;freeMode=false;customMode=true;editingBoard=!!saved.editingBoard;
+  }else{restoreCurrentStage();return;}
+  if(saved.lastStageMode&&typeof saved.lastStageMode.extra==='boolean'&&Number.isInteger(saved.lastStageMode.index)){
+    lastStageMode={extra:saved.lastStageMode.extra,index:saved.lastStageMode.index};
+  }
+  restoreSavedBoard(saved.board);
+  renderStageNav();
+  if(customMode&&editingBoard)showMakerMessage();
+}
 function startFree(){
   savedFreeSession=null;
   extraMode=false;freeMode=true;customMode=false;editingBoard=false;
@@ -2500,6 +2575,10 @@ function messageReviewPlace(entry){
 function renderMessageReview(){
   const entry=messageReviewEntries[messageReviewIndex];if(!entry)return;
   const art=entry.art||'',illustration=$('messageIllustration'),roadmap=$('messageRoadmap'),rules=$('messageRules'),seal=$('messageMasterSeal'),rankText=$('messageRankText'),masterText=$('messageMasterText');
+  $('messagePrev').textContent='← '+tr('prev');
+  $('messageNext').textContent=tr('next')+' →';
+  $('closeMessages').textContent=tr('close');
+  renderMasteryBoard('messageMasteryBoard',entry.master==='mastery');
   roadmap.hidden=!entry.master||entry.master==='mastery';rules.hidden=true;
   seal.hidden=!entry.master;
   rankText.hidden=true;masterText.hidden=true;
@@ -2525,9 +2604,6 @@ function renderMessageReview(){
   }else{
   $('messageDialogText').hidden=false;
   $('messageDialogTitle').textContent=tr('messageDialogTitle');
-  $('messagePrev').textContent='← '+tr('prev');
-  $('messageNext').textContent=tr('next')+' →';
-  $('closeMessages').textContent=tr('close');
   $('messageDialogPlace').textContent=messageReviewPlace(entry);
   $('messageDialogTextBody').textContent=entry.text;
   }
@@ -2656,6 +2732,43 @@ function miniBoardSvg(state){
   }).join('');
   return '<svg viewBox="14 0 293 310" aria-hidden="true">'+tiles+'</svg>';
 }
+function masteryBoardSvg(){
+  const tiles=CELL.map((cell,i)=>'<g class="tile stand mastery-tile" data-cell="'+i+'" style="transform:'+tileTransform(cell.x,cell.y,0)+'">'
+    +'<path class="hex" d="'+hexPath(R)+'"/><use href="#daruma-body"/><g class="open"><use href="#face-open"/></g><g class="shut"><use href="#face-shut"/></g><g class="happy"><use href="#face-happy"/></g></g>').join('');
+  return '<svg viewBox="14 0 293 310" aria-hidden="true">'+tiles+'</svg>';
+}
+const masteryBoardTimers=new Map();
+function animateMasteryBoard(id){
+  const board=$(id);
+  const play=()=>{
+    if(board.hidden||!board.isConnected)return;
+    const tiles=[...board.querySelectorAll('.mastery-tile')];
+    if(!tiles.length||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+    let remaining=tiles.length;
+    tiles.forEach(tile=>{
+      const from=Number(tile.dataset.cell),to=VIEW_ROTATE_60[from];
+      const middle=rotatePointAroundBoard(CELL[from],30);
+      const final=tileTransform(CELL[to].x,CELL[to].y,0);
+      const animation=tile.animate([
+        {transform:tileTransform(CELL[from].x,CELL[from].y,0)},
+        {transform:tileTransform(middle.x,middle.y,0),offset:.5},
+        {transform:final}
+      ],{duration:680,easing:'cubic-bezier(.2,.72,.2,1)',fill:'forwards'});
+      animation.onfinish=()=>{
+        tile.style.transform=final;tile.dataset.cell=to;
+        if(--remaining===0)masteryBoardTimers.set(id,setTimeout(play,130));
+      };
+    });
+  };
+  masteryBoardTimers.set(id,setTimeout(play,180));
+}
+function renderMasteryBoard(id,show){
+  const board=$(id);
+  clearTimeout(masteryBoardTimers.get(id));
+  board.hidden=!show;
+  board.innerHTML=show?masteryBoardSvg():'';
+  if(show)animateMasteryBoard(id);
+}
 function renderTwoMovePatterns(){
   $('twoMoveGrid').innerHTML=twoMoveDisplayStates.map((state,index)=>'<button class="two-move-card" type="button" data-state="'+state+'" data-pattern="'+twoMoveDisplayPatterns[index]+'">'+miniBoardSvg(state)+'</button>').join('');
 }
@@ -2772,6 +2885,7 @@ function animateTwoMovePatterns(angle=0,mirror=false){
 }
 function showMasterDialog(kind='primary'){
   masterDialogKind=kind;
+  renderMasteryBoard('masteryBoard',kind==='mastery');
   const seal=$('masterSeal');
   const rankText=$('masterRankText');
   rankText.hidden=true;
@@ -2823,10 +2937,10 @@ function returnToStageMode(){
 function renderMasterRoadmap(kind){
   const roadmap=$('masterRoadmap');
   roadmap.hidden=kind==='mastery';
+  const rules=$('masterRules');rules.hidden=kind!=='primary';
   if(roadmap.hidden)return;
   const current=kind==='primary'?2:kind==='volume'?Math.min(5,Math.ceil((extraIndex+1)/STAGES.length)+2):kind==='mastery'?6:(allPrimaryCleared()?2:1);
   roadmap.innerHTML=masterRoadmapMarkup(current);
-  const rules=$('masterRules');rules.hidden=kind!=='primary';
   if(kind==='primary')rules.textContent=masterCommonRules();
 }
 function masterRoadmapMarkup(current){
@@ -3334,7 +3448,7 @@ $('resetProgress').addEventListener('click',()=>{
   if(!confirm(tr('resetConfirm'))) return;
   clearedStages.clear();
   clearedExtraStages.clear();
-  try{localStorage.removeItem('wake7-cleared');localStorage.removeItem('wake7-extra-cleared');localStorage.removeItem('wake7-intro-seen');localStorage.removeItem('wake7-current-stage');}catch(_){}
+  try{localStorage.removeItem('wake7-cleared');localStorage.removeItem('wake7-extra-cleared');localStorage.removeItem('wake7-intro-seen');localStorage.removeItem('wake7-current-stage');localStorage.removeItem('wake7-active-session');}catch(_){}
   updateMasterTheme();
   loadStage(0);
 });
@@ -3342,7 +3456,7 @@ $('resetProgress').addEventListener('click',()=>{
 buildBoard();
 updateMasterTheme();
 renderProgress();
-restoreCurrentStage();
+restoreActiveSession();
 let savedLanguage='ja';
 try{
   const storedLanguage=localStorage.getItem('wake7-language');
@@ -3350,6 +3464,8 @@ try{
 }catch(_){}
 applyLanguage(savedLanguage);
 try{if(!localStorage.getItem('wake7-intro-seen'))setTimeout(openIntroGuide,350);}catch(_){setTimeout(openIntroGuide,350);}
+window.addEventListener('pagehide',saveActiveSession);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')saveActiveSession();});
 
 if(document.documentElement.classList.contains('embed')&&window.parent!==window){
   const embedContentEnd=document.querySelector('.debug-tools');
