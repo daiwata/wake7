@@ -187,6 +187,10 @@
   .clear-tip-illustration svg{width:220px;height:124px;overflow:visible}
   .clear-tip-illustration.controls-art svg{width:240px}
   .clear-tip-illustration.navigation-art svg{width:240px}
+  .clear-tip-illustration.rank-badge-art{height:40px;margin:14px 0 4px}
+  .clear-tip-illustration.rank-badge-art svg{width:72px;height:29px}
+  .clear-tip-illustration.unwritten-art{height:140px;margin:18px 0 -4px}
+  .clear-tip-illustration.unwritten-art svg{width:250px;height:140px}
   .clear-tip-illustration.move-graph{height:154px;margin:14px 0 -3px}
   .clear-tip-illustration.move-graph svg{width:335px;height:154px}
   .clear-tip-illustration.board-card{height:164px;margin:12px 0 -5px}
@@ -737,7 +741,9 @@ const STAGES=[
   {state:552,par:3},{state:292,par:3},{state:1006,par:3}
 ];
 const TWO_MOVE_STAGES=STAGES.filter(stage=>stage.par===2);
-const CLEAR_TWO_MOVE_CARDS={4:8,7:7,9:6,16:5,19:4,21:3,27:2,31:1,33:0};
+// 覚えやすい順。番号は TWO_MOVE_STAGES 内での元の並び順（1 始まり）。
+const TWO_MOVE_PATTERN_ORDER=[7,6,5,4,3,8,0,2,1];
+const CLEAR_TWO_MOVE_CARDS={4:7,7:6,9:5,16:4,19:3,21:8,27:0,31:2,33:1};
 const CLEAR_GUIDE_CARDS={
   23:{state:[2,0,0,0,1,0,0],text:'guideCardOuter',page:0},
   37:{state:[1,1,1,0,1,1,1],text:'guideCardCenter',page:2},
@@ -847,7 +853,7 @@ const UI_TEXT={
     masteryTitle:'名人への道 制覇！',masteryText:'全パターンを攻略しました。\n金色の盤面テーマを手に入れました。',masteryStart:'フリーモードへ →'
     ,pathInfoTitle:'名人への道',pathInfoText:'「序」から「極」まで、各15問。全60問の道のりです。',pathInfoStart:'序を始める →'
     ,breakthroughSeal:'突破',masterySeal:'名人'
-    ,stageClear1:'水色の棒のあたりをタップしてスワイプすると、3体を回しやすいよ。',stageClear3:'次からは、最短2手の問題です。',stageClear4:'ゲームを中断して閉じても、今やっている問題から再開できます。',stageClear6:'「七転び八起き」は、何度倒れても起き上がることのたとえです。難しくてもあきらめないで！',stageClear9:'だるまには、願いを込めて片目を入れ、かなったらもう片方も描く風習があります。',stageClear11:'だるまの赤は、まよけや生命力を表す色です。諸説ありますが、達磨大師（だるまだいし）の赤い法衣にちなむとされます。',stageClear12:'次からは、最短3手の問題です。',extraClear2:'「だるまさんがころんだ」は10文字。10まで数える代わりの言葉として使われてきました。',extraClear6:'「だるまさんがころんだ」以外の10の数え方として、地域によっては「へいたいさんがとおる」など、別の唱え言葉もありました。',extraClear11:'高崎だるまは、群馬県ふるさと伝統工芸品に指定されています。',extraClear18:'サンスクリット語「dharma」は、仏が説いた教えやこの世の真理のこと。「達磨大師」の「達磨」も、だるまの名前も、この言葉に由来します。',extraClear23:'高崎のだるまづくりは、1859年に赤い顔料が輸入されると盛んになりました。',extraClear25:'だるまは、達磨大師（だるまだいし）が9年座禅を続けたという伝説にちなみ、手足のない姿に描かれます。',extraClear35:'だるまは、木型に紙を重ねて作る「張り子」の工芸品です。',extraClear41:'1829年の高崎では、市でだるまを売る様子が版画と文章に残されています。',extraClear43:'高崎だるまの顔は、眉毛が鶴、ヒゲが亀を表すように描かれます。「縁起だるま」「福だるま」とも呼ばれます。',extraClear50:'だるまが赤い理由には諸説あり。赤い法衣や、魔よけの願いにちなむとされます。',extraClear54:'高崎だるまのお腹には、「福入」と書かれることがあります。福が入るようにという願いです。',extraClear58:'「だるまさんがころんだ」遊びの由来は比較的新しい可能性もあり、明治生まれの人々の記憶のなかには無いという話もあります。'
+    ,stageClear1:'水色の棒のあたりをタップしてスワイプすると、3体を回しやすいよ。',stageClear3:'次からは、最短2手の問題です。',stageClear4:'ゲームを中断して閉じても、今やっている問題から再開できます。',stageClear6:'「七転び八起き」は、何度倒れても起き上がることのたとえです。難しくてもあきらめないで！',stageClear9:'だるまには、願いを込めて片目を入れ、かなったらもう片方も描く風習があります。',stageClear11:'だるまの赤は、まよけや生命力を表す色です。諸説ありますが、達磨大師（だるまだいし）の赤い法衣にちなむとされます。',stageClear12:'次からは、最短3手の問題です。',extraClear2:'「だるまさんがころんだ」は10文字。10まで数える代わりの言葉として使われてきました。',extraClear6:'「だるまさんがころんだ」以外の10の数え方として、地域によっては「へいたいさんがとおる」など、別の唱え言葉もありました。',extraClear11:'高崎だるまは、群馬県ふるさと伝統工芸品に指定されています。',extraClear18:'サンスクリット語「dharma」は、仏が説いた教えやこの世の真理のこと。「達磨大師」の「達磨」も、だるまの名前も、この言葉に由来します。',extraClear23:'高崎のだるまづくりは、1859年に赤い顔料が輸入されると盛んになりました。',extraClear25:'達磨大師（だるまだいし）が9年座禅を続けたという伝説があり、これを面壁九年（めんぺきくねん）と言います。この伝説にちなみ、だるまは手足のない姿に描かれます。',extraClear35:'だるまは、木型に紙を重ねて作る「張り子」の工芸品です。',extraClear41:'1829年の高崎では、市でだるまを売る様子が版画と文章に残されています。',extraClear43:'高崎だるまの顔は、眉毛が鶴、ヒゲが亀を表すように描かれます。「縁起だるま」「福だるま」とも呼ばれます。',extraClear50:'だるまが赤い理由には諸説あり。赤い法衣や、魔よけの願いにちなむとされます。',extraClear54:'高崎だるまのお腹には、「福入」と書かれることがあります。福が入るようにという願いです。',extraClear58:'「だるまさんがころんだ」遊びの由来は比較的新しい可能性もあり、明治生まれの人々の記憶のなかには無いという話もあります。',extraClearRankCollection:'左上の称号をタップすると、集めた称号を一覧で見られます。がんばってクリアして、集めよう。',extraClearMessageReview:'もう一度見たいクリア後メッセージは、メニューからいつでも見られます。'
   },
   en:{
     pageTitle:'Wake the Daruma! — WAKE SEVEN',language:'Choose language',title:'Wake the Daruma!',
@@ -876,7 +882,7 @@ const UI_TEXT={
     masteryTitle:'Path to Mastery complete!',masteryText:'You solved every pattern.\nThe golden board theme is now yours.',masteryStart:'Go to Free Play →'
     ,pathInfoTitle:'Path to Mastery',pathInfoText:'Four volumes of 15 puzzles await: 60 puzzles in all.',pathInfoStart:'Begin Volume 1 →'
     ,breakthroughSeal:'PASS',masterySeal:'MASTER'
-    ,stageClear1:'Start your swipe near a blue handle to turn the three daruma more easily.',stageClear3:'From the next puzzle, the best solution takes two moves.',stageClear4:'Even after reloading, you can resume from the puzzle you were playing.',stageClear6:'“Fall down seven times, get up eight” means never giving up.',stageClear9:'A daruma often receives one eye with a wish, then the other when it comes true.',stageClear11:'Daruma red represents protection and vitality.',stageClear12:'From the next puzzle, the best solution takes three moves.',extraClear2:'“Daruma-san ga koronda” has ten syllables, used in place of counting to ten.',extraClear6:'Other regions used different counting chants, such as “Heitai-san ga tōru.”',extraClear11:'Takasaki daruma are designated Gunma traditional crafts.',extraClear18:'The name “daruma” comes from Bodhidharma, the master’s name. Its “dharma” is Sanskrit for teaching or law.',extraClear23:'Takasaki daruma production grew after red pigment began to be imported in 1859.',extraClear25:'Legend says Daruma sat in meditation for nine years, inspiring the limbless form.',extraClear35:'Daruma are papier-mâché crafts, made by layering paper over a wooden mold.',extraClear41:'In 1829, prints and writing recorded daruma being sold at a market in Takasaki.',extraClear43:'Takasaki daruma feature cranes and turtles, and are also called lucky daruma.',extraClear50:'Why daruma are red has several explanations: red robes and wishes for protection among them.',extraClear54:'Takasaki daruma sometimes carry the words “Fuku-iri” — a wish for good fortune to enter.',extraClear58:'The origin of “Daruma-san ga koronda” has several theories; it may be a relatively new folk game.'
+    ,stageClear1:'Start your swipe near a blue handle to turn the three daruma more easily.',stageClear3:'From the next puzzle, the best solution takes two moves.',stageClear4:'Even after reloading, you can resume from the puzzle you were playing.',stageClear6:'“Fall down seven times, get up eight” means never giving up.',stageClear9:'A daruma often receives one eye with a wish, then the other when it comes true.',stageClear11:'Daruma red represents protection and vitality.',stageClear12:'From the next puzzle, the best solution takes three moves.',extraClear2:'“Daruma-san ga koronda” has ten syllables, used in place of counting to ten.',extraClear6:'Other regions used different counting chants, such as “Heitai-san ga tōru.”',extraClear11:'Takasaki daruma are designated Gunma traditional crafts.',extraClear18:'The name “daruma” comes from Bodhidharma, the master’s name. Its “dharma” is Sanskrit for teaching or law.',extraClear23:'Takasaki daruma production grew after red pigment began to be imported in 1859.',extraClear25:'Legend says Bodhidharma meditated for nine years. This is called “nine years facing a wall,” and it inspired the limbless daruma form.',extraClear35:'Daruma are papier-mâché crafts, made by layering paper over a wooden mold.',extraClear41:'In 1829, prints and writing recorded daruma being sold at a market in Takasaki.',extraClear43:'Takasaki daruma feature cranes and turtles, and are also called lucky daruma.',extraClear50:'Why daruma are red has several explanations: red robes and wishes for protection among them.',extraClear54:'Takasaki daruma sometimes carry the words “Fuku-iri” — a wish for good fortune to enter.',extraClear58:'The origin of “Daruma-san ga koronda” has several theories; it may be a relatively new folk game.',extraClearRankCollection:'Tap the title at top left to view the titles you have collected. Clear puzzles to earn them all!',extraClearMessageReview:'You can revisit any clear message from the Menu.'
   },
   zh:{
     pageTitle:'叫醒不倒翁！— WAKE SEVEN',language:'选择语言',title:'叫醒不倒翁！',
@@ -936,10 +942,10 @@ const UI_TEXT={
   }
 };
 Object.assign(UI_TEXT.ja,{
-  menu:'メニュー',clearMessages:'クリア後のメッセージ',messageDialogTitle:'クリア後のメッセージ',optimalFailTitle:'最短ではありません',optimalFailText:'最短手数で、もう一度挑戦しよう。',twoMovePatterns:'最短2手の盤面を見る',twoMoveTitle:'最短2手の9パターン',twoMoveText:'基本3〜11で、すべて遊べます。',twoMoveDetailTitle:'この盤面のコツ',compareBoard:'盤面をスワイプすると、ゲーム中の盤面と比べられます',playInFree:'フリーモードで遊ぶ →',backToPatterns:'一覧へ',stageModeReturn:'ステージモードへ',tipGuideTitle:'攻略のコツを見る',playThisBoard:'この盤面で遊ぶ →',
+  menu:'メニュー',clearMessages:'クリア後のメッセージ',messageDialogTitle:'クリア後のメッセージ',optimalFailTitle:'最短ではありません',optimalFailText:'最短手数で、もう一度挑戦しよう。',twoMovePatterns:'最短2手の盤面を見る',twoMoveTitle:'最短2手の9パターン',twoMoveText:'基本3〜11で、すべて遊べます。',twoMoveDetailTitle:'この盤面のコツ',compareBoard:'盤面をスワイプしてゲーム中の盤面と比べよう',playInFree:'フリーモードで遊ぶ →',backToPatterns:'一覧へ',stageModeReturn:'ステージモードへ',tipGuideTitle:'攻略のコツを見る',playThisBoard:'この盤面で遊ぶ →',
   extraClear1:'名人への道では、「離」の途中まで最短3手の問題が続きます。',
   extraClear3:'この7枚の配置のだるま起こしでは、最短4手以内に必ずクリアできる仕組みになっています。',
-  extraClear30:'不立文字（ふりゅうもんじ）は、悟りは文字や言葉だけでは伝えられない、という禅の考え方です。',
+  extraClear30:'不立文字（ふりゅうもんじ）は、悟りは文字や言葉だけでは伝えられず、心から心へ伝わるものだ、という禅の考え方です。達磨大師を始祖とする禅宗で大切にされてきました。',
   extraClear7:'名人への道の終盤では、残り最短手数が表示されません。最短2手の盤面を見分ける感覚を、今のうちに身につけておこう。',
   extraClear9:'全ての最短4手盤面で、6本の軸をランダムに選び、最短3手になる向きへ回すと、約78％で最短3手になります。',
   extraClear33:'最短3手の盤面で、12通りの回し方をランダムに選ぶと、最短2手になるのは約17％、そのまま最短3手は約56％、最短4手になるのは約27％です。',
@@ -1036,10 +1042,68 @@ Object.assign(UI_TEXT.ja,{extraClear56:'だるま落としは江戸時代から�
 Object.assign(UI_TEXT.en,{extraClear56:'Daruma otoshi has been a beloved toy since the Edo period. Hit the body blocks with a hammer, without knocking over the daruma head.'});
 Object.assign(UI_TEXT.zh,{extraClear56:'达摩落是自江户时代以来深受喜爱的玩具。用小锤敲击身体的木块，同时不能让最上面的达摩脸倒下。'});
 Object.assign(UI_TEXT.ko,{extraClear56:'다루마오토시는 에도 시대부터 사랑받은 장난감이에요. 망치로 몸통 블록을 쳐서, 맨 위 다루마 얼굴을 넘어뜨리지 않고 빼냅니다.'});
-Object.assign(UI_TEXT.ja,{extraFourthOneCheck:'次から「残り手数」ボタンは1回だけ使えます。',extraFourthNoCheck:'ラスト3問では「残り手数」ボタンが使えません。',extraFinalNotice:'次が名人への道、最終問題です。'});
-Object.assign(UI_TEXT.en,{extraFourthOneCheck:'From the next puzzle, Moves Left can be checked only once.',extraFourthNoCheck:'For the final three puzzles, Moves Left cannot be checked.',extraFinalNotice:'The next puzzle is the final challenge.'});
-Object.assign(UI_TEXT.zh,{extraFourthOneCheck:'从下一题起，“剩余步数”只能查看一次。',extraFourthNoCheck:'最后3题不能查看“剩余步数”。',extraFinalNotice:'下一题是名人之路的最终问题。'});
-Object.assign(UI_TEXT.ko,{extraFourthOneCheck:'다음 문제부터 남은 수는 한 번만 확인할 수 있어요.',extraFourthNoCheck:'마지막 3문제에서는 남은 수를 확인할 수 없어요.',extraFinalNotice:'다음 문제가 명인의 길 최종 문제입니다.'});
+Object.assign(UI_TEXT.zh,{extraClearRankCollection:'点击左上角的称号，即可查看已收集的称号。努力通关，把它们都收集起来吧！'});
+Object.assign(UI_TEXT.ko,{extraClearRankCollection:'왼쪽 위의 칭호를 누르면 모은 칭호를 한눈에 볼 수 있어요. 열심히 클리어해서 모두 모아 보세요!'});
+Object.assign(UI_TEXT.zh,{extraClearMessageReview:'想再看的通关后消息，随时可以从菜单中查看。'});
+Object.assign(UI_TEXT.ko,{extraClearMessageReview:'다시 보고 싶은 클리어 메시지는 메뉴에서 언제든 볼 수 있어요.'});
+Object.assign(UI_TEXT.zh,{extraClear25:'传说达摩大师面壁坐禅九年，称为“面壁九年”。不倒翁没有手脚的样子便来自这个传说。'});
+Object.assign(UI_TEXT.ko,{extraClear25:'달마대사가 9년 동안 좌선했다는 전설을 면벽구년이라고 합니다. 다루마가 손발 없는 모습으로 그려지는 것은 이 전설에서 비롯되었습니다.'});
+Object.assign(UI_TEXT.ja,{
+  extraAdviceTwoMove:'最短2手の形は、だるまの向きまで含めて覚えるのがコツです。',
+  extraAdviceImagine:'ヒントなしでは、回す前に「次は何手になりそうか」を想像してみよう。',
+  extraAdviceSeparate:'迷ったら、寝ているだるまの形と向きを、いったん別々に見てみよう。',
+  extraAdviceTurn:'盤面を回すと景色は変わる。でも、だるまたちの向きも一緒に変わります。',
+  extraAdviceFourToThree:'最短4手では、まず最短3手になる一手を探すのが近道です。',
+  extraAdviceAdvance:'次の形が最短2手に近づくなら、大きな前進です。',
+  extraAdviceNearTwo:'三手先を全部読むより、最短2手の形に近づくかを見てみよう。',
+  extraAdviceInnerEye:'ここまで来たら、答えを探す目はもう自分の中にあります。'
+});
+Object.assign(UI_TEXT.en,{
+  extraAdviceTwoMove:'The key is to remember two-move shapes together with each daruma’s direction.',
+  extraAdviceImagine:'Without hints, try to imagine how many moves the next board might take before you turn.',
+  extraAdviceSeparate:'When stuck, look at the shape of the fallen daruma and their directions separately.',
+  extraAdviceTurn:'Turning the board changes the view—but the daruma directions turn with it.',
+  extraAdviceFourToThree:'On a four-move board, first look for a turn that reaches three moves.',
+  extraAdviceAdvance:'If the next board gets closer to two moves, that is real progress.',
+  extraAdviceNearTwo:'Rather than reading three moves ahead, look for a board approaching a two-move shape.',
+  extraAdviceInnerEye:'By now, the eye that finds the answer is already within you.'
+});
+Object.assign(UI_TEXT.zh,{
+  extraAdviceTwoMove:'记住最少2步的图案时，也要连同不倒翁的朝向一起记住。',
+  extraAdviceImagine:'没有提示时，试着在转动前想象下一盘大概需要几步。',
+  extraAdviceSeparate:'迷茫时，把倒下不倒翁的形状和朝向分开来看。',
+  extraAdviceTurn:'转动棋盘会改变眼前的景色，但不倒翁的朝向也会一起转动。',
+  extraAdviceFourToThree:'最少4步时，先寻找能变成最少3步的一手。',
+  extraAdviceAdvance:'如果下一盘更接近最少2步，就是很大的前进。',
+  extraAdviceNearTwo:'与其读完三步之后，不如看看能否接近最少2步的形状。',
+  extraAdviceInnerEye:'走到这里，寻找答案的眼睛已经在你心中了。'
+});
+Object.assign(UI_TEXT.ko,{
+  extraAdviceTwoMove:'최단 2수 모양은 다루마의 방향까지 함께 외우는 것이 요령이에요.',
+  extraAdviceImagine:'힌트 없이 돌리기 전, 다음 보드가 몇 수쯤 될지 상상해 보세요.',
+  extraAdviceSeparate:'막히면 누운 다루마의 모양과 방향을 따로 살펴보세요.',
+  extraAdviceTurn:'보드를 돌리면 풍경은 바뀌지만, 다루마의 방향도 함께 돌아갑니다.',
+  extraAdviceFourToThree:'최단 4수에서는 먼저 최단 3수가 되는 수를 찾는 것이 지름길이에요.',
+  extraAdviceAdvance:'다음 보드가 최단 2수에 가까워진다면 큰 전진이에요.',
+  extraAdviceNearTwo:'세 수 앞을 모두 읽기보다 최단 2수 모양에 가까워지는지 살펴보세요.',
+  extraAdviceInnerEye:'여기까지 왔다면 답을 찾는 눈은 이미 당신 안에 있어요.'
+});
+Object.assign(UI_TEXT.ja,{extraClearResetProgress:'最初からやり直したいときは、メニューの「進行状況をリセット」を使えます。集めた称号も消えるので注意。',resetConfirm:'進行状況と、集めた称号がすべて消えます。最初からやり直しますか？'});
+Object.assign(UI_TEXT.en,{extraClearResetProgress:'To start again from the beginning, choose “Reset progress” from the Menu. Your collected titles will also be erased.',resetConfirm:'This will erase all progress and collected titles. Start again from the beginning?'});
+Object.assign(UI_TEXT.zh,{extraClearResetProgress:'想从头再来时，可从菜单选择“重置进度”。已获得的称号也会被删除，请注意。',resetConfirm:'进度和已获得的称号都会被删除。要从头再来吗？'});
+Object.assign(UI_TEXT.ko,{extraClearResetProgress:'처음부터 다시 하려면 메뉴의 “진행 상황 초기화”를 사용하세요. 모은 칭호도 함께 사라지니 주의하세요.',resetConfirm:'진행 상황과 모은 칭호가 모두 사라집니다. 처음부터 다시 시작할까요?'});
+Object.assign(UI_TEXT.ja,{rankDialogTitle:'獲得した称号一覧'});
+Object.assign(UI_TEXT.en,{rankDialogTitle:'Collected titles'});
+Object.assign(UI_TEXT.zh,{rankDialogTitle:'已获得的称号'});
+Object.assign(UI_TEXT.ko,{rankDialogTitle:'획득한 칭호'});
+Object.assign(UI_TEXT.ja,{rankListMenu:'獲得した称号一覧'});
+Object.assign(UI_TEXT.en,{rankListMenu:'Collected titles'});
+Object.assign(UI_TEXT.zh,{rankListMenu:'已获得的称号'});
+Object.assign(UI_TEXT.ko,{rankListMenu:'획득한 칭호'});
+Object.assign(UI_TEXT.ja,{extraFourthOneCheck:'次から「残り手数」ボタンは1回だけ使えます。',extraFourthNoCheck:'よくここまでたどり着きましたね。\n次の問題からは残り手数のボタンが使えません。\nここからが本当の正念場です。',extraFinalNotice:'次がラストの問題です。\n最後に起き上がるのは、だるまか、あなたか。'});
+Object.assign(UI_TEXT.en,{extraFourthOneCheck:'From the next puzzle, Moves Left can be checked only once.',extraFourthNoCheck:'You have come a long way.\nFrom the next puzzle, the Moves Left button is unavailable.\nThis is the true critical moment.',extraFinalNotice:'The next puzzle is the last one.\nWho rises last: the daruma, or you?'});
+Object.assign(UI_TEXT.zh,{extraFourthOneCheck:'从下一题起，“剩余步数”只能查看一次。',extraFourthNoCheck:'你已经走到这里了。\n从下一题起，不能再使用“剩余步数”按钮。\n真正的关键时刻到了。',extraFinalNotice:'下一题就是最后一题。\n最后站起来的是不倒翁，还是你？'});
+Object.assign(UI_TEXT.ko,{extraFourthOneCheck:'다음 문제부터 남은 수는 한 번만 확인할 수 있어요.',extraFourthNoCheck:'여기까지 정말 잘 왔어요.\n다음 문제부터는 남은 수 버튼을 쓸 수 없습니다.\n이제부터가 진짜 고비예요.',extraFinalNotice:'다음 문제가 마지막 문제예요.\n마지막에 일어나는 것은 다루마일까요, 당신일까요?'});
 Object.assign(UI_TEXT.ja,{quizTitle:'だるまクイズ',quizCorrect:'正解！',quizWrong:'おしい！',quizContinue:'つづける →'});
 Object.assign(UI_TEXT.en,{quizTitle:'Daruma Quiz',quizCorrect:'Correct!',quizWrong:'Not quite!',quizContinue:'Continue →'});
 Object.assign(UI_TEXT.zh,{quizTitle:'不倒翁小测验',quizCorrect:'答对了！',quizWrong:'差一点！',quizContinue:'继续 →'});
@@ -1056,7 +1120,9 @@ const DARUMA_QUIZZES=[
   { q:'だるまの生産量が日本一の県は？',a:['京都府','群馬県','愛知県','福島県'],correct:1,note:'群馬県高崎市。少林山達磨寺のふもとで作られてきた高崎だるまが、全国の大半を占めています。' },
   { q:'だるまの原型になったとされる郷土玩具は？',a:['こけし','起き上がり小法師','張り子の虎','土鈴'],correct:1,note:'底を重くして必ず起き上がる玩具。これに達磨大師の姿を重ねたのがだるまです。' },
   { q:'役目を終えただるまは、どうするのが一般的？',a:['川に流す','お寺で供養して焼く','土に埋める','売り戻す'],correct:1,note:'だるま供養。年末年始に寺社へ納め、感謝とともにお焚き上げしてもらいます。' },
-  { q:'だるまの赤は、何を表す色？',a:['まよけや生命力','お祝いごとの華やかさ','火のあたたかさ','秋のもみじ'],correct:0,note:'だるまの赤は、まよけや生命力を表す色です。' }
+  { q:'だるまの赤は、何を表す色？',a:['まよけや生命力','お祝いごとの華やかさ','火のあたたかさ','秋のもみじ'],correct:0,note:'だるまの赤は、まよけや生命力を表す色です。' },
+  { q:'江戸時代、赤いだるまは何よけとして求められた？',a:['疱瘡（ほうそう）よけ','火事よけ','雨よけ','虫よけ'],correct:0,note:'赤い色には邪気を払う力があると信じられ、疱瘡よけとしても求められました。' },
+  { q:'達磨大師が開いたとされる仏教の宗派は？',a:['禅宗','浄土宗','真言宗','日蓮宗'],correct:0,note:'達磨大師は、中国禅宗の開祖とされています。' }
 ];
 const DARUMA_QUIZ_TRANSLATIONS={
   en:[
@@ -1066,7 +1132,9 @@ const DARUMA_QUIZ_TRANSLATIONS={
     {q:'Which prefecture produces the most daruma in Japan?',a:['Kyoto','Gunma','Aichi','Fukushima'],correct:1,note:'Takasaki, Gunma. Takasaki daruma, made near Shōrinzan Daruma Temple, account for the majority nationwide.'},
     {q:'Which folk toy is said to have inspired the daruma?',a:['Kokeshi','Okiagari-kobōshi','Papier-mâché tiger','Clay bell'],correct:1,note:'It is a toy weighted at the bottom so it always rises again. Daruma were created by combining this form with Bodhidharma.'},
     {q:'What is commonly done with a daruma that has fulfilled its role?',a:['Float it down a river','Return it to a temple for a memorial burning','Bury it','Sell it back'],correct:1,note:'This is daruma kuyō. Around the New Year, daruma are returned to a temple or shrine and ritually burned with gratitude.'},
-    {q:'What does daruma red represent?',a:['Protection and vitality','Celebration','The warmth of fire','Autumn leaves'],correct:0,note:'Daruma red represents protection and vitality.'}
+    {q:'What does daruma red represent?',a:['Protection and vitality','Celebration','The warmth of fire','Autumn leaves'],correct:0,note:'Daruma red represents protection and vitality.'},
+    {q:'In the Edo period, red daruma were sought as protection against what?',a:['Smallpox','Fire','Rain','Insects'],correct:0,note:'Red was believed to ward off evil, and daruma were sought as protection against smallpox.'},
+    {q:'Which Buddhist school is Bodhidharma said to have founded?',a:['Zen','Pure Land','Shingon','Nichiren'],correct:0,note:'Bodhidharma is regarded as the founder of Chinese Zen Buddhism.'}
   ],
   zh:[
     {q:'不倒翁的原型是哪位僧人？',a:['空海','达摩大师','行基','一休'],correct:1,note:'达摩大师从印度来到中国，相传面壁坐禅九年。不倒翁没有手脚的样子就来自这个故事。'},
@@ -1075,7 +1143,9 @@ const DARUMA_QUIZ_TRANSLATIONS={
     {q:'日本不倒翁产量第一的县是？',a:['京都府','群马县','爱知县','福岛县'],correct:1,note:'群马县高崎市。少林山达磨寺附近制作的高崎不倒翁占全国大部分产量。'},
     {q:'被认为是不倒翁原型的乡土玩具是？',a:['木芥子','起身小法师','纸糊老虎','土铃'],correct:1,note:'它的底部较重，一定会重新立起。不倒翁就是把达摩大师的形象和这种玩具结合而成的。'},
     {q:'完成使命的不倒翁，一般怎么处理？',a:['放进河里','送到寺院供养焚烧','埋进土里','卖回去'],correct:1,note:'这叫不倒翁供养。年末年初送到寺社，带着感谢进行焚烧仪式。'},
-    {q:'不倒翁的红色象征什么？',a:['避邪与生命力','喜庆热闹','火的温暖','秋天的红叶'],correct:0,note:'不倒翁的红色象征避邪与生命力。'}
+    {q:'不倒翁的红色象征什么？',a:['避邪与生命力','喜庆热闹','火的温暖','秋天的红叶'],correct:0,note:'不倒翁的红色象征避邪与生命力。'},
+    {q:'江户时代，人们把红色不倒翁当作什么的护身符？',a:['天花','火灾','大雨','虫害'],correct:0,note:'人们相信红色能驱邪，因此也会用红色不倒翁祈求免受天花侵扰。'},
+    {q:'达摩大师被认为开创了哪个佛教宗派？',a:['禅宗','净土宗','真言宗','日莲宗'],correct:0,note:'达摩大师被视为中国禅宗的开祖。'}
   ],
   ko:[
     {q:'다루마의 모델이 된 스님의 이름은?',a:['구카이','달마대사','교키','잇큐'],correct:1,note:'인도 출신으로 중국에 건너간 달마대사는 벽을 마주 보고 9년 동안 좌선했다고 전해집니다. 손발 없는 다루마 모습은 이 일화에서 나왔어요.'},
@@ -1084,11 +1154,13 @@ const DARUMA_QUIZ_TRANSLATIONS={
     {q:'일본에서 다루마 생산량이 가장 많은 현은?',a:['교토부','군마현','아이치현','후쿠시마현'],correct:1,note:'군마현 다카사키시입니다. 소린잔 다루마사 근처에서 만들어진 다카사키 다루마가 전국 대다수를 차지합니다.'},
     {q:'다루마의 원형이 되었다고 전해지는 향토 장난감은?',a:['고케시','오키아가리코보시','종이호랑이','흙방울'],correct:1,note:'밑을 무겁게 만들어 반드시 다시 일어나는 장난감입니다. 여기에 달마대사의 모습을 겹친 것이 다루마예요.'},
     {q:'역할을 마친 다루마는 보통 어떻게 할까?',a:['강에 띄운다','절에서 공양하고 태운다','땅에 묻는다','되판다'],correct:1,note:'다루마 공양입니다. 연말연시에 절이나 신사에 돌려드리고, 감사와 함께 태워 올립니다.'},
-    {q:'다루마의 붉은색은 무엇을 뜻할까?',a:['액막이와 생명력','축하의 화려함','불의 따뜻함','가을 단풍'],correct:0,note:'다루마의 붉은색은 액막이와 생명력을 뜻합니다.'}
+    {q:'다루마의 붉은색은 무엇을 뜻할까?',a:['액막이와 생명력','축하의 화려함','불의 따뜻함','가을 단풍'],correct:0,note:'다루마의 붉은색은 액막이와 생명력을 뜻합니다.'},
+    {q:'에도 시대에 붉은 다루마는 무엇을 막기 위해 찾았을까?',a:['천연두','화재','비','벌레'],correct:0,note:'붉은색에는 사악한 기운을 물리치는 힘이 있다고 믿어, 천연두를 막기 위한 다루마도 찾았습니다.'},
+    {q:'달마대사가 열었다고 전해지는 불교 종파는?',a:['선종','정토종','진언종','일련종'],correct:0,note:'달마대사는 중국 선종의 개조로 여겨집니다.'}
   ]
 };
 const PRIMARY_QUIZ_STAGES={10:6};
-const QUIZ_STAGES={11:0,20:1,28:4,38:2,49:5,55:3};
+const QUIZ_STAGES={11:0,17:7,20:1,28:4,38:2,43:8,49:5,55:3};
 
 /* ---- 盤面 ---- */
 const svg=document.getElementById('board'), $=id=>document.getElementById(id);
@@ -1862,7 +1934,7 @@ function rankPathLabel(index){
 }
 function renderRankList(){
   const highest=highestRankIndex(),list=$('rankList');
-  $('rankDialogTitle').textContent=tr('rankCollection');
+  $('rankDialogTitle').textContent=tr('rankDialogTitle');
   $('closeRankDialog').textContent=tr('close');
   list.innerHTML='';
   masterPath().ranks.forEach((rank,index)=>{
@@ -2121,9 +2193,9 @@ function showClearDialog(){
 }
 function stageClearTextAt(mode,index){
   if(mode){
-    if(CLEAR_TWO_MOVE_CARDS[index]!==undefined)return tr('twoMoveDiscovery',{n:CLEAR_TWO_MOVE_CARDS[index]+1});
+    if(CLEAR_TWO_MOVE_CARDS[index]!==undefined)return tr('twoMoveDiscovery',{n:TWO_MOVE_PATTERN_ORDER.indexOf(CLEAR_TWO_MOVE_CARDS[index])+1});
     if(CLEAR_GUIDE_CARDS[index])return tr(CLEAR_GUIDE_CARDS[index].text);
-    const extraTips={0:'stageClear6',1:'extraClear2',2:'extraClear3',5:'extraClear6',6:'extraClear7',10:'stageClear9',13:'extraClear54',15:'extraClear25',22:'extraClear23',30:'extraClear30',31:'extraClear4',32:'extraClear33',34:'extraClear35',35:'extraClear36',40:'extraClear41',42:'extraClear43',45:'extraClear18',46:'extraClear47',47:'extraClear48',48:'extraClear49',51:'extraFourthOneCheck',53:'extraClear53',56:'extraFourthNoCheck',57:'extraClear56',58:'extraFinalNotice'};
+    const extraTips={0:'stageClear6',1:'extraClear2',2:'extraClear3',3:'extraClearRankCollection',5:'extraClear6',6:'extraClear7',8:'extraClearMessageReview',10:'stageClear9',12:'extraAdviceTwoMove',13:'extraClear54',15:'extraClear25',18:'extraAdviceImagine',22:'extraClear23',25:'extraAdviceSeparate',26:'extraAdviceTurn',30:'extraClear30',31:'extraClear4',32:'extraClear33',34:'extraClear35',35:'extraClear36',36:'extraAdviceFourToThree',39:'extraAdviceAdvance',40:'extraClear41',41:'extraAdviceNearTwo',42:'extraClear43',45:'extraClear18',46:'extraClear47',47:'extraClear48',48:'extraClear49',50:'extraAdviceInnerEye',51:'extraFourthOneCheck',53:'extraClear53',54:'extraClearResetProgress',56:'extraFourthNoCheck',57:'extraClear56',58:'extraFinalNotice'};
     return extraTips[index]?tr(extraTips[index]):'';
   }
   if(index===0)return tr('stageClear1');
@@ -2148,7 +2220,7 @@ function stageClearArtAt(mode,index){
   if(mode){
     if(CLEAR_TWO_MOVE_CARDS[index]!==undefined)return 'twoMoveCard:'+CLEAR_TWO_MOVE_CARDS[index];
     if(CLEAR_GUIDE_CARDS[index])return 'guideCard:'+CLEAR_GUIDE_CARDS[index].state.join('');
-    return ({0:'rise',1:'count',5:'chants',10:'eyes',13:'fuku',15:'legend',22:'pigment',30:'unwritten',32:'moveGraph',34:'paper',40:'market',42:'crane',45:'dharma',53:'shelfFall',57:'darumaOtoshi'})[index]||'';
+    return ({0:'rise',1:'count',3:'rankBadgeArt',5:'chants',10:'eyes',13:'fuku',15:'legend',22:'pigment',30:'unwritten',32:'moveGraph',34:'paper',40:'market',42:'crane',45:'dharma',53:'shelfFall',57:'darumaOtoshi'})[index]||'';
   }
   return ({3:'remaining',4:'controls',5:'theories',7:'hintButton',8:'craft',9:'navigation',10:'red',12:'monaka'})[index]||'';
 }
@@ -2197,6 +2269,7 @@ function tipMonakaFaceArt(){
 }
 function tipArt(key){
   if(key==='monaka')return tipMonakaFaceArt();
+  if(key==='rankBadgeArt')return rankFrameSvg(masterPath().ranks[0],false,0);
   const d=tipDaruma;
   if(key.startsWith('twoMoveCard:'))return clearBoardSvg(TWO_MOVE_STAGES[Number(key.slice(12))].state);
   if(key.startsWith('guideCard:'))return clearBoardSvg(enc(Uint8Array.from(key.slice(10).split('').map(Number))));
@@ -2248,6 +2321,8 @@ function renderClearTip(){
   illustration.classList.toggle('board-card',art.startsWith('twoMoveCard:')||art.startsWith('guideCard:'));
   illustration.classList.toggle('controls-art',art==='controls');
   illustration.classList.toggle('navigation-art',art==='navigation');
+  illustration.classList.toggle('rank-badge-art',art==='rankBadgeArt');
+  illustration.classList.toggle('unwritten-art',art==='unwritten');
   illustration.innerHTML=art?tipArt(art):'';
   illustration.hidden=!art;
 }
@@ -2281,7 +2356,7 @@ function messageReviewPlace(entry){
 function renderMessageReview(){
   const entry=messageReviewEntries[messageReviewIndex];if(!entry)return;
   const art=entry.art||'',illustration=$('messageIllustration'),roadmap=$('messageRoadmap'),rules=$('messageRules'),seal=$('messageMasterSeal'),rankText=$('messageRankText'),masterText=$('messageMasterText');
-  roadmap.hidden=!entry.master;rules.hidden=true;
+  roadmap.hidden=!entry.master||entry.master==='mastery';rules.hidden=true;
   seal.hidden=!entry.master;
   rankText.hidden=true;masterText.hidden=true;
   $('messageDialogText').hidden=!!entry.master||entry.quiz!==undefined;
@@ -2289,7 +2364,7 @@ function renderMessageReview(){
   if(entry.master){
     const volume=entry.master==='primary'?0:Math.ceil((entry.index+1)/STAGES.length);
     const current=entry.master==='primary'?2:entry.master==='mastery'?6:Math.min(5,volume+2);
-    roadmap.innerHTML=masterRoadmapMarkup(current);
+    if(entry.master!=='mastery')roadmap.innerHTML=masterRoadmapMarkup(current);
     if(entry.master==='primary'){
       $('messageMasterSealLabel').textContent=masterPath().ranks[0];setSealColor(seal,0);$('messageDialogTitle').textContent=tr('masterTitle');$('messageDialogPlace').textContent=messageReviewPlace(entry);rankText.hidden=false;rankText.textContent=rankEarnedText(masterPath().ranks[0]);masterText.hidden=false;masterText.textContent=tr('masterText');rules.hidden=false;rules.textContent=masterCommonRules();
     }else if(entry.master==='mastery'){
@@ -2316,6 +2391,8 @@ function renderMessageReview(){
   illustration.classList.toggle('board-card',art.startsWith('twoMoveCard:')||art.startsWith('guideCard:'));
   illustration.classList.toggle('controls-art',art==='controls');
   illustration.classList.toggle('navigation-art',art==='navigation');
+  illustration.classList.toggle('rank-badge-art',art==='rankBadgeArt');
+  illustration.classList.toggle('unwritten-art',art==='unwritten');
   illustration.innerHTML=art?tipArt(art):'';
   illustration.hidden=!art;
   $('messagePrev').disabled=messageReviewIndex===0;
@@ -2415,7 +2492,7 @@ function returnToClearDialog(){
   $('clearDialog').hidden=false;
   $('clearTipLink').focus();
 }
-let twoMoveDisplayStates=[],twoMoveAnimating=false,twoMoveAnimationTimer=0;
+let twoMoveDisplayStates=[],twoMoveDisplayPatterns=[],twoMoveAnimating=false,twoMoveAnimationTimer=0;
 let twoMoveDetailState=null,twoMoveDetailIndex=-1,twoMoveDetailAnimating=false,twoMoveDetailAnimationTimer=0,detailDrag=null;
 const TWO_MOVE_TIP_INDEX=[8,6,7,5,5,4,4,1,2];
 const miniAngle=value=>value===2?-120:value*120;
@@ -2430,14 +2507,15 @@ function miniBoardSvg(state){
   return '<svg viewBox="14 0 293 310" aria-hidden="true">'+tiles+'</svg>';
 }
 function renderTwoMovePatterns(){
-  $('twoMoveGrid').innerHTML=twoMoveDisplayStates.map((state,index)=>'<button class="two-move-card" type="button" data-state="'+state+'" data-pattern="'+index+'">'+miniBoardSvg(state)+'</button>').join('');
+  $('twoMoveGrid').innerHTML=twoMoveDisplayStates.map((state,index)=>'<button class="two-move-card" type="button" data-state="'+state+'" data-pattern="'+twoMoveDisplayPatterns[index]+'">'+miniBoardSvg(state)+'</button>').join('');
 }
 function openTwoMovePatterns(){
   returnToClearCard=false;
   $('closeTwoMoveDetail').textContent=tr('backToPatterns');
   clearTimeout(twoMoveAnimationTimer);
   twoMoveAnimating=false;
-  twoMoveDisplayStates=TWO_MOVE_STAGES.map(stage=>stage.state);
+  twoMoveDisplayPatterns=[...TWO_MOVE_PATTERN_ORDER];
+  twoMoveDisplayStates=twoMoveDisplayPatterns.map(index=>TWO_MOVE_STAGES[index].state);
   renderTwoMovePatterns();
   $('twoMoveDialog').hidden=false;
   $('closeTwoMovePatterns').focus();
@@ -2593,8 +2671,11 @@ function returnToStageMode(){
   else loadStage(lastStageMode.index);
 }
 function renderMasterRoadmap(kind){
+  const roadmap=$('masterRoadmap');
+  roadmap.hidden=kind==='mastery';
+  if(roadmap.hidden)return;
   const current=kind==='primary'?2:kind==='volume'?Math.min(5,Math.ceil((extraIndex+1)/STAGES.length)+2):kind==='mastery'?6:(allPrimaryCleared()?2:1);
-  $('masterRoadmap').innerHTML=masterRoadmapMarkup(current);
+  roadmap.innerHTML=masterRoadmapMarkup(current);
   const rules=$('masterRules');rules.hidden=kind!=='primary';
   if(kind==='primary')rules.textContent=masterCommonRules();
 }
