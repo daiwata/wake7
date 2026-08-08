@@ -392,7 +392,7 @@
     font-size:16px;line-height:1.4;font-family:"Hiragino Mincho ProN",serif;
     color:var(--kin);opacity:0;transition:opacity .35s ease;text-align:center;
   }
-  .msg.show{height:38px;margin-top:6px;opacity:1}
+  .msg.show{height:38px;margin-top:2px;opacity:1}
   .msg.tip{
     width:100%;max-width:372px;font-family:inherit;font-size:clamp(9px,2.8vw,11.5px);
     color:#A8B6C7;white-space:nowrap;
@@ -734,20 +734,133 @@ function buildSolver(kind){
 }
 const SOLVER=buildSolver('roll');
 const STAGES=[
-  {state:31,par:1},{state:558,par:1},{state:837,par:1},
-  {state:1732,par:2},{state:922,par:2},{state:526,par:2},{state:1516,par:2},
-  {state:544,par:2},{state:196,par:2},{state:76,par:2},{state:57,par:2},
-  {state:7,par:2},
-  {state:552,par:3},{state:292,par:3},{state:1006,par:3}
+  // 入門
+  { state:31, par:1 },
+  { state:558, par:1 },
+  { state:837, par:1 },
+  // 基本
+  { state:1732, par:2 },
+  { state:922, par:2 },
+  { state:526, par:2 },
+  { state:1516, par:2 },
+  { state:544, par:2 },
+  { state:196, par:2 },
+  { state:76, par:2 },
+  { state:57, par:2 },
+  { state:7, par:2 },
+  // 挑戦（最短3手の代表3問。下で自動選出結果を差し替える）
+  { state:552, par:3 },
+  { state:292, par:3 },
+  { state:1006, par:3 }
 ];
 const TWO_MOVE_STAGES=STAGES.filter(stage=>stage.par===2);
 // 覚えやすい順。番号は TWO_MOVE_STAGES 内での元の並び順（1 始まり）。
 const TWO_MOVE_PATTERN_ORDER=[7,6,5,4,3,8,0,2,1];
-const CLEAR_TWO_MOVE_CARDS={4:7,7:6,9:5,16:4,19:3,21:8,27:0,31:2,33:1};
+const TWO_MOVE_PATTERN_POSITION=Object.fromEntries(TWO_MOVE_PATTERN_ORDER.map((pattern,position)=>[pattern,position+1]));
+const CLEAR_TWO_MOVE_CARDS={
+  4:7,
+  7:6,
+  9:5,
+  16:4,
+  19:3,
+  21:8,
+  27:0,
+  31:2,
+  33:1
+};
 const CLEAR_GUIDE_CARDS={
-  23:{state:[2,0,0,0,1,0,0],text:'guideCardOuter',page:0},
-  37:{state:[1,1,1,0,1,1,1],text:'guideCardCenter',page:2},
-  52:{state:[0,2,2,1,0,0,1],text:'guideCardAlternate',page:1}
+  23:{ state:[2,0,0,0,1,0,0], text:'guideCardOuter', page:0 },
+  37:{ state:[1,1,1,0,1,1,1], text:'guideCardCenter', page:2 },
+  52:{ state:[0,2,2,1,0,0,1], text:'guideCardAlternate', page:1 }
+};
+const PRIMARY_CLEAR_TIPS={
+  // 入門
+  0:'stageClear1',
+  1:'stageClear2',
+  2:'stageClear3',
+  // 基本
+  3:'stageClear4',
+  4:'stageClear5',
+  5:'extraClear58',
+  6:'stageClearBasic3',
+  7:'stageClear8',
+  8:'extraClear11',
+  9:'stageClear10',
+  11:'stageClear12',
+  // 挑戦
+  12:'extraClear50',
+  13:'stageClearChallenge2',
+  14:'masterText'
+};
+const EXTRA_CLEAR_TIPS={
+  // 名人への道・序
+  0:'stageClear6',
+  1:'extraClear2',
+  2:'extraClear3',
+  3:'extraClearRankCollection',
+  5:'extraClear6',
+  6:'extraClear7',
+  8:'extraClearMessageReview',
+  10:'stageClear9',
+  12:'extraAdviceTwoMove',
+  13:'extraClear54',
+  // 名人への道・破
+  15:'extraClear25',
+  18:'extraAdviceImagine',
+  22:'extraClear23',
+  25:'extraAdviceSeparate',
+  26:'extraAdviceTurn',
+  // 名人への道・離
+  30:'extraClear30',
+  31:'extraClear4',
+  32:'extraClear33',
+  34:'extraClear35',
+  35:'extraClear36',
+  36:'extraAdviceFourToThree',
+  39:'extraAdviceAdvance',
+  40:'extraClear41',
+  41:'extraAdviceNearTwo',
+  42:'extraClear43',
+  // 名人への道・極
+  45:'extraClear18',
+  46:'extraClear47',
+  47:'extraClear48',
+  48:'extraClear49',
+  50:'extraAdviceInnerEye',
+  51:'extraFourthOneCheck',
+  53:'extraClear53',
+  54:'extraClearResetProgress',
+  56:'extraFourthNoCheck',
+  57:'extraClear56',
+  58:'extraFinalNotice'
+};
+const PRIMARY_CLEAR_ARTS={
+  3:'remaining',
+  4:'controls',
+  5:'theories',
+  7:'hintButton',
+  8:'craft',
+  9:'navigation',
+  10:'red',
+  12:'monaka'
+};
+const EXTRA_CLEAR_ARTS={
+  0:'rise',
+  1:'count',
+  3:'rankBadgeArt',
+  5:'chants',
+  10:'eyes',
+  13:'fuku',
+  15:'legend',
+  22:'pigment',
+  30:'unwritten',
+  32:'moveGraph',
+  34:'paper',
+  40:'market',
+  42:'crane',
+  45:'dharma',
+  53:'shelfFall',
+  57:'darumaOtoshi'
 };
 const SYMMETRIES=Array.from({length:6},(_,k)=>[
   {permutation:makeBoardPermutation(k*60),flip:false},
@@ -836,7 +949,7 @@ const UI_TEXT={
     mirror:'左右反転',rotate:'60°回転',boardLabel:'七枚のだるま盤',tips:'攻略のコツ',
     makeBoard:'自作モード',playBoard:'この盤面で遊ぶ',nextPuzzle:'次の問題へ →',
     resetProgress:'進行状況をリセット',stage:'問題',intro:'入門',basic:'基本',challenge:'挑戦',
-    freePlay:'フリーモード',boardMaker:'盤面を作る',customPuzzle:'自作問題',
+    freePlay:'フリーモード',boardMaker:'盤面を編集する',customPuzzle:'自作問題',
     freeKind:'FREE PLAY',makerKind:'BOARD MAKER',customKind:'CUSTOM PLAY',
     another:'もう一問',again:'もう一度',toFree:'フリーモードへ →',
     allPatternsKind:'名人への道',allPatternsNext:'名人への道へ →',nextPattern:'次の問題へ →',
@@ -853,7 +966,27 @@ const UI_TEXT={
     masteryTitle:'名人への道 制覇！',masteryText:'全パターンを攻略しました。\n金色の盤面テーマを手に入れました。',masteryStart:'フリーモードへ →'
     ,pathInfoTitle:'名人への道',pathInfoText:'「序」から「極」まで、各15問。全60問の道のりです。',pathInfoStart:'序を始める →'
     ,breakthroughSeal:'突破',masterySeal:'名人'
-    ,stageClear1:'水色の棒のあたりをタップしてスワイプすると、3体を回しやすいよ。',stageClear3:'次からは、最短2手の問題です。',stageClear4:'ゲームを中断して閉じても、今やっている問題から再開できます。',stageClear6:'「七転び八起き」は、何度倒れても起き上がることのたとえです。難しくてもあきらめないで！',stageClear9:'だるまには、願いを込めて片目を入れ、かなったらもう片方も描く風習があります。',stageClear11:'だるまの赤は、まよけや生命力を表す色です。諸説ありますが、達磨大師（だるまだいし）の赤い法衣にちなむとされます。',stageClear12:'次からは、最短3手の問題です。',extraClear2:'「だるまさんがころんだ」は10文字。10まで数える代わりの言葉として使われてきました。',extraClear6:'「だるまさんがころんだ」以外の10の数え方として、地域によっては「へいたいさんがとおる」など、別の唱え言葉もありました。',extraClear11:'高崎だるまは、群馬県ふるさと伝統工芸品に指定されています。',extraClear18:'サンスクリット語「dharma」は、仏が説いた教えやこの世の真理のこと。「達磨大師」の「達磨」も、だるまの名前も、この言葉に由来します。',extraClear23:'高崎のだるまづくりは、1859年に赤い顔料が輸入されると盛んになりました。',extraClear25:'達磨大師（だるまだいし）が9年座禅を続けたという伝説があり、これを面壁九年（めんぺきくねん）と言います。この伝説にちなみ、だるまは手足のない姿に描かれます。',extraClear35:'だるまは、木型に紙を重ねて作る「張り子」の工芸品です。',extraClear41:'1829年の高崎では、市でだるまを売る様子が版画と文章に残されています。',extraClear43:'高崎だるまの顔は、眉毛が鶴、ヒゲが亀を表すように描かれます。「縁起だるま」「福だるま」とも呼ばれます。',extraClear50:'だるまが赤い理由には諸説あり。赤い法衣や、魔よけの願いにちなむとされます。',extraClear54:'高崎だるまのお腹には、「福入」と書かれることがあります。福が入るようにという願いです。',extraClear58:'「だるまさんがころんだ」遊びの由来は比較的新しい可能性もあり、明治生まれの人々の記憶のなかには無いという話もあります。',extraClearRankCollection:'左上の称号をタップすると、集めた称号を一覧で見られます。がんばってクリアして、集めよう。',extraClearMessageReview:'もう一度見たいクリア後メッセージは、メニューからいつでも見られます。'
+    ,stageClear1:'水色の棒のあたりをタップしてスワイプすると、3体を回しやすいよ。'
+    ,stageClear3:'次からは、最短2手の問題です。'
+    ,stageClear4:'ゲームを中断して閉じても、今やっている問題から再開できます。'
+    ,stageClear6:'「七転び八起き」は、何度倒れても起き上がることのたとえです。難しくてもあきらめないで！'
+    ,stageClear9:'だるまには、願いを込めて片目を入れ、かなったらもう片方も描く風習があります。'
+    ,stageClear11:'だるまの赤は、まよけや生命力を表す色です。諸説ありますが、達磨大師（だるまだいし）の赤い法衣にちなむとされます。'
+    ,stageClear12:'次からは、最短3手の問題です。'
+    ,extraClear2:'「だるまさんがころんだ」は10文字。10まで数える代わりの言葉として使われてきました。'
+    ,extraClear6:'「だるまさんがころんだ」以外の10の数え方として、地域によっては「へいたいさんがとおる」など、別の唱え言葉もありました。'
+    ,extraClear11:'高崎だるまは、群馬県ふるさと伝統工芸品に指定されています。'
+    ,extraClear18:'サンスクリット語「dharma」は、仏が説いた教えやこの世の真理のこと。「達磨大師」の「達磨」も、だるまの名前も、この言葉に由来します。'
+    ,extraClear23:'高崎のだるまづくりは、1859年に赤い顔料が輸入されると盛んになりました。'
+    ,extraClear25:'達磨大師（だるまだいし）が9年座禅を続けたという伝説があり、これを面壁九年（めんぺきくねん）と言います。この伝説にちなみ、だるまは手足のない姿に描かれます。'
+    ,extraClear35:'だるまは、木型に紙を重ねて作る「張り子」の工芸品です。'
+    ,extraClear41:'1829年の高崎では、市でだるまを売る様子が版画と文章に残されています。'
+    ,extraClear43:'高崎だるまの顔は、眉毛が鶴、ヒゲが亀を表すように描かれます。「縁起だるま」「福だるま」とも呼ばれます。'
+    ,extraClear50:'だるまが赤い理由には諸説あり。赤い法衣や、魔よけの願いにちなむとされます。'
+    ,extraClear54:'高崎だるまのお腹には、「福入」と書かれることがあります。福が入るようにという願いです。'
+    ,extraClear58:'「だるまさんがころんだ」遊びの由来は比較的新しい可能性もあり、明治生まれの人々の記憶のなかには無いという話もあります。'
+    ,extraClearRankCollection:'左上の称号をタップすると、集めた称号を一覧で見られます。がんばってクリアして、集めよう。'
+    ,extraClearMessageReview:'もう一度見たいクリア後メッセージは、メニューからいつでも見られます。'
   },
   en:{
     pageTitle:'Wake the Daruma! — WAKE SEVEN',language:'Choose language',title:'Wake the Daruma!',
@@ -865,7 +998,7 @@ const UI_TEXT={
     boardLabel:'Seven-daruma puzzle board',tips:'Quick tip',makeBoard:'Board Maker',
     playBoard:'Play this board',nextPuzzle:'Next puzzle →',resetProgress:'Reset progress',
     stage:'Puzzle',intro:'INTRO',basic:'BASIC',challenge:'CHALLENGE',freePlay:'Free Play',
-    boardMaker:'Board Maker',customPuzzle:'Custom Puzzle',freeKind:'FREE PLAY',
+    boardMaker:'Edit board',customPuzzle:'Custom Puzzle',freeKind:'FREE PLAY',
     makerKind:'BOARD MAKER',customKind:'CUSTOM PLAY',another:'Another puzzle',again:'Try again',
     toFree:'Go to Free Play →',optimalClear:'Everyone is awake in the fewest moves. Brilliant!',
     allPatternsKind:'PATH TO MASTERY',allPatternsNext:'Path to Mastery →',nextPattern:'Next puzzle →',
@@ -894,7 +1027,7 @@ const UI_TEXT={
     boardLabel:'七个不倒翁的谜题棋盘',tips:'攻略提示',makeBoard:'制作棋盘',
     playBoard:'玩这个棋盘',nextPuzzle:'下一题 →',resetProgress:'重置进度',
     stage:'关卡',intro:'入门',basic:'基础',challenge:'挑战',freePlay:'自由模式',
-    boardMaker:'制作棋盘',customPuzzle:'自制关卡',freeKind:'自由模式',
+    boardMaker:'编辑棋盘',customPuzzle:'自制关卡',freeKind:'自由模式',
     makerKind:'制作棋盘',customKind:'自制关卡',another:'再来一题',again:'再来一次',
     toFree:'进入自由模式 →',optimalClear:'用最少步数叫醒了全部不倒翁。太棒了！',
     allPatternsKind:'名人之路',allPatternsNext:'进入名人之路 →',nextPattern:'下一题 →',
@@ -922,7 +1055,7 @@ const UI_TEXT={
     boardLabel:'일곱 다루마 퍼즐판',tips:'공략 팁',makeBoard:'보드 만들기',
     playBoard:'이 보드로 플레이',nextPuzzle:'다음 문제 →',resetProgress:'진행 상황 초기화',
     stage:'문제',intro:'입문',basic:'기본',challenge:'도전',freePlay:'자유 모드',
-    boardMaker:'보드 만들기',customPuzzle:'사용자 문제',freeKind:'자유 모드',
+    boardMaker:'보드 편집',customPuzzle:'사용자 문제',freeKind:'자유 모드',
     makerKind:'보드 만들기',customKind:'사용자 문제',another:'다른 문제',again:'다시 하기',
     toFree:'자유 모드로 →',optimalClear:'최단 수로 모두 깨웠습니다. 훌륭해요!',
     allPatternsKind:'명인의 길',allPatternsNext:'명인의 길로 →',nextPattern:'다음 문제 →',
@@ -1159,8 +1292,24 @@ const DARUMA_QUIZ_TRANSLATIONS={
     {q:'달마대사가 열었다고 전해지는 불교 종파는?',a:['선종','정토종','진언종','일련종'],correct:0,note:'달마대사는 중국 선종의 개조로 여겨집니다.'}
   ]
 };
-const PRIMARY_QUIZ_STAGES={10:6};
-const QUIZ_STAGES={11:0,17:7,20:1,28:4,38:2,43:8,49:5,55:3};
+// 値は DARUMA_QUIZZES の番号。キーはクリアした問題の 0 始まり番号。
+const PRIMARY_QUIZ_STAGES={
+  10:6
+};
+const QUIZ_STAGES={
+  // 名人への道・序
+  11:0,
+  // 名人への道・破
+  17:7,
+  20:1,
+  28:4,
+  // 名人への道・離
+  38:2,
+  43:8,
+  // 名人への道・極
+  49:5,
+  55:3
+};
 
 /* ---- 盤面 ---- */
 const svg=document.getElementById('board'), $=id=>document.getElementById(id);
@@ -2069,14 +2218,17 @@ function renderStageNav(){
   for(const id of ['debugClear','debugUnlock14','debugUnlock','debugExtra14','debugExtra29','debugExtra44','debugExtra59'])$(id).hidden=!DEBUG_MODE;
   $('reset').textContent=editingBoard?tr('resetAll'):tr('reset');
   const inSideMode=freeMode||customMode;
+  $('stageKind').hidden=false;
   $('stageNav').classList.toggle('side-mode-nav',inSideMode);
   $('prevStage').textContent=inSideMode?tr('stageModeReturn'):tr('prev');
   $('prevStage').setAttribute('aria-label',inSideMode?tr('stageModeReturn'):tr('prev'));
   $('prevStage').disabled=!inSideMode&&(!extraMode&&stageIndex===0);
-  $('nextStage').textContent=freeMode?tr('shuffle'):tr('next');
-  $('nextStage').setAttribute('aria-label',freeMode?tr('shuffle'):tr('next'));
-  $('nextStage').hidden=customMode;
-  $('nextStage').disabled=customMode||(!freeMode&&(extraMode?(extraIndex===EXTRA_STAGES.length-1||!clearedExtraStages.has(extraIndex)):(stageIndex===STAGES.length-1?!allPrimaryCleared():!clearedStages.has(stageIndex))));
+  const customPlaying=customMode&&!editingBoard;
+  const nextLabel=customPlaying?tr('boardMaker'):freeMode?tr('shuffle'):tr('next');
+  $('nextStage').textContent=nextLabel;
+  $('nextStage').setAttribute('aria-label',nextLabel);
+  $('nextStage').hidden=customMode&&!customPlaying;
+  $('nextStage').disabled=customPlaying?false:customMode||(!freeMode&&(extraMode?(extraIndex===EXTRA_STAGES.length-1||!clearedExtraStages.has(extraIndex)):(stageIndex===STAGES.length-1?!allPrimaryCleared():!clearedStages.has(stageIndex))));
   $('stageMode').classList.toggle('on',!freeMode&&!customMode);
   $('freeMode').classList.toggle('on',freeMode);
   $('stageMode').setAttribute('aria-pressed',String(!freeMode&&!customMode));
@@ -2097,8 +2249,8 @@ function renderStageNav(){
     $('stageNumber').textContent=tr('freePlay');
     showRemaining(remainingForDisplay(SOLVER.dist[enc(ori)]),false);
   }else if(customMode){
-    $('stageKind').textContent=editingBoard?tr('makerKind'):tr('customKind');
-    $('stageNumber').textContent=editingBoard?tr('boardMaker'):tr('customPuzzle');
+    $('stageKind').textContent='CUSTOM';
+    $('stageNumber').textContent=tr('makeBoard');
     const d=SOLVER.dist[enc(ori)];
     if(editingBoard)$('stagePar').textContent=d===255?'—':d;
     else showRemaining(d,false);
@@ -2193,36 +2345,20 @@ function showClearDialog(){
 }
 function stageClearTextAt(mode,index){
   if(mode){
-    if(CLEAR_TWO_MOVE_CARDS[index]!==undefined)return tr('twoMoveDiscovery',{n:TWO_MOVE_PATTERN_ORDER.indexOf(CLEAR_TWO_MOVE_CARDS[index])+1});
+    if(CLEAR_TWO_MOVE_CARDS[index]!==undefined)return tr('twoMoveDiscovery',{n:TWO_MOVE_PATTERN_POSITION[CLEAR_TWO_MOVE_CARDS[index]]});
     if(CLEAR_GUIDE_CARDS[index])return tr(CLEAR_GUIDE_CARDS[index].text);
-    const extraTips={0:'stageClear6',1:'extraClear2',2:'extraClear3',3:'extraClearRankCollection',5:'extraClear6',6:'extraClear7',8:'extraClearMessageReview',10:'stageClear9',12:'extraAdviceTwoMove',13:'extraClear54',15:'extraClear25',18:'extraAdviceImagine',22:'extraClear23',25:'extraAdviceSeparate',26:'extraAdviceTurn',30:'extraClear30',31:'extraClear4',32:'extraClear33',34:'extraClear35',35:'extraClear36',36:'extraAdviceFourToThree',39:'extraAdviceAdvance',40:'extraClear41',41:'extraAdviceNearTwo',42:'extraClear43',45:'extraClear18',46:'extraClear47',47:'extraClear48',48:'extraClear49',50:'extraAdviceInnerEye',51:'extraFourthOneCheck',53:'extraClear53',54:'extraClearResetProgress',56:'extraFourthNoCheck',57:'extraClear56',58:'extraFinalNotice'};
-    return extraTips[index]?tr(extraTips[index]):'';
+    return EXTRA_CLEAR_TIPS[index]?tr(EXTRA_CLEAR_TIPS[index]):'';
   }
-  if(index===0)return tr('stageClear1');
-  if(index===1)return tr('stageClear2');
-  if(index===2)return tr('stageClear3');
-  if(index===3)return tr('stageClear4');
-  if(index===4)return tr('stageClear5');
-  if(index===5)return tr('extraClear58');
-  if(index===6)return tr('stageClearBasic3');
-  if(index===7)return tr('stageClear8');
-  if(index===8)return tr('extraClear11');
-  if(index===9)return tr('stageClear10');
-  if(index===10)return '';
-  if(index===11)return tr('stageClear12');
-  if(index===12)return tr('extraClear50');
-  if(index===13)return tr('stageClearChallenge2');
-  if(index===14)return tr('masterText');
-  return '';
+  return PRIMARY_CLEAR_TIPS[index]?tr(PRIMARY_CLEAR_TIPS[index]):'';
 }
 function stageClearText(){return freeMode||customMode?'':stageClearTextAt(extraMode,extraMode?extraIndex:stageIndex);}
 function stageClearArtAt(mode,index){
   if(mode){
     if(CLEAR_TWO_MOVE_CARDS[index]!==undefined)return 'twoMoveCard:'+CLEAR_TWO_MOVE_CARDS[index];
     if(CLEAR_GUIDE_CARDS[index])return 'guideCard:'+CLEAR_GUIDE_CARDS[index].state.join('');
-    return ({0:'rise',1:'count',3:'rankBadgeArt',5:'chants',10:'eyes',13:'fuku',15:'legend',22:'pigment',30:'unwritten',32:'moveGraph',34:'paper',40:'market',42:'crane',45:'dharma',53:'shelfFall',57:'darumaOtoshi'})[index]||'';
+    return EXTRA_CLEAR_ARTS[index]||'';
   }
-  return ({3:'remaining',4:'controls',5:'theories',7:'hintButton',8:'craft',9:'navigation',10:'red',12:'monaka'})[index]||'';
+  return PRIMARY_CLEAR_ARTS[index]||'';
 }
 function stageClearArt(){return stageClearArtAt(extraMode,extraMode?extraIndex:stageIndex);}
 function tipDaruma(x,y,scale=.55){
@@ -2698,6 +2834,7 @@ $('prevStage').addEventListener('click',()=>{
  });
 $('nextStage').addEventListener('click',()=>{
   if(freeMode){startFree();return;}
+  if(customMode&&!editingBoard){enterBoardMaker();return;}
   if(extraMode)loadExtraStage(extraIndex+1);
   else if(stageIndex===STAGES.length-1&&allPrimaryCleared())loadExtraStage(0);
   else loadStage(stageIndex+1);
@@ -3012,6 +3149,7 @@ $('tipGuideDialog').addEventListener('click',event=>{if(event.target===$('tipGui
 function applyLanguage(lang){
   if(!UI_TEXT[lang])return;
   currentLang=lang;
+  try{localStorage.setItem('wake7-language',lang);}catch(_){}
   document.documentElement.lang=lang==='zh'?'zh-CN':lang;
   document.title=tr('pageTitle');
   document.querySelector('h1').textContent=tr('title');
@@ -3190,7 +3328,12 @@ buildBoard();
 updateMasterTheme();
 renderProgress();
 restoreCurrentStage();
-applyLanguage('ja');
+let savedLanguage='ja';
+try{
+  const storedLanguage=localStorage.getItem('wake7-language');
+  if(UI_TEXT[storedLanguage])savedLanguage=storedLanguage;
+}catch(_){}
+applyLanguage(savedLanguage);
 try{if(!localStorage.getItem('wake7-intro-seen'))setTimeout(openIntroGuide,350);}catch(_){setTimeout(openIntroGuide,350);}
 
 if(document.documentElement.classList.contains('embed')&&window.parent!==window){
