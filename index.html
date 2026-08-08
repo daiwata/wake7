@@ -272,6 +272,7 @@
   }
   .play-actions{width:100%;display:flex;gap:5px;margin-left:auto}
   .play-actions .chip{flex:1;white-space:nowrap;padding:8px 5px;font-size:11px}
+  .play-actions .chip:disabled{background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.07);color:#536276;opacity:.52;cursor:not-allowed}
   .debug-tools{width:100%;max-width:372px;display:flex;justify-content:center;gap:5px;margin-top:14px}
   .debug-tools .chip{padding:5px 8px;font-size:10px;opacity:.7}
 
@@ -484,6 +485,13 @@
     <div class="clear-tip-illustration" id="messageIllustration" hidden></div>
     <div id="messageDialogText"><span id="messageDialogTextBody"></span></div>
     <div class="dialog-actions"><button class="chip" id="messagePrev">← 前へ</button><button class="chip" id="closeMessages">閉じる</button><button class="chip" id="messageNext">次へ →</button></div>
+  </div>
+</div>
+<div class="game-dialog-backdrop" id="optimalFailDialog" hidden>
+  <div class="game-dialog" role="dialog" aria-modal="true" aria-labelledby="optimalFailTitle">
+    <h2 id="optimalFailTitle">最短ではありません</h2>
+    <p id="optimalFailText">最短手数で、もう一度挑戦しよう。</p>
+    <div class="dialog-actions"><button class="chip on" id="optimalRetry">やり直す</button></div>
   </div>
 </div>
 <div class="game-dialog-backdrop" id="masterDialog" hidden>
@@ -746,14 +754,20 @@ FOUR_MOVE_STAGES.sort((a,b)=>{
   const ae=fourMoveEase(a),be=fourMoveEase(b);
   return be.progress-ae.progress||be.followup-ae.followup;
 });
-EXTRA_STAGES.push(...FOUR_MOVE_STAGES);
+/* 情報が多い巻ほど難問を。四の巻の最後3問は確認なしでも届く易しめの盤面を段階的に。 */
+EXTRA_STAGES.push(
+  ...FOUR_MOVE_STAGES.slice(15),  /* 三の巻後半：難しい9問 */
+  ...FOUR_MOVE_STAGES.slice(8,15),/* 四の巻前半：確認2回向けの7問 */
+  ...FOUR_MOVE_STAGES.slice(3,8), /* 中盤：確認1回向けの5問（易→難） */
+  FOUR_MOVE_STAGES[0],FOUR_MOVE_STAGES[1],FOUR_MOVE_STAGES[2] /* 最後3問：易→難 */
+);
 let currentLang='ja';
 const UI_TEXT={
   ja:{
     pageTitle:'だるまさんを起こして！ — WAKE SEVEN',language:'言語を選ぶ',title:'だるまさんを起こして！',
     prev:'前へ',next:'次へ',progress:'全15問の進捗',shortest:'残り最短',moveUnit:'手',moves:'手数',
     stageMode:'ステージモード',freeMode:'フリーモード',shuffle:'シャッフル',reset:'やり直す',
-    resetAll:'全員起きる',undo:'1手戻す',shortestMoves:'最短手数',hint:'ヒント',
+    resetAll:'全員起きる',undo:'1手戻す',shortestMoves:'最短手数',hint:'ヒント',remainingCheck:'残り手数 ×{n}',
     debugClear:'DEBUG: 即クリア',debugUnlock14:'DEBUG: 14問開放',debugUnlock:'DEBUG: 15問開放',
     debugExtra14:'DEBUG: 名人14問',debugExtra29:'DEBUG: 名人29問',debugExtra44:'DEBUG: 名人44問',debugExtra59:'DEBUG: 名人59問',
     mirror:'左右反転',rotate:'60°回転',boardLabel:'七枚のだるま盤',tips:'攻略のコツ',
@@ -782,7 +796,7 @@ const UI_TEXT={
     pageTitle:'Wake the Daruma! — WAKE SEVEN',language:'Choose language',title:'Wake the Daruma!',
     prev:'Previous',next:'Next',progress:'Progress through 15 puzzles',shortest:'At least',moveUnit:'moves left',moves:'Moves',
     stageMode:'Puzzles',freeMode:'Free Play',shuffle:'Shuffle',reset:'Restart',resetAll:'Stand all up',
-    undo:'Undo',shortestMoves:'Moves left',hint:'Hint',mirror:'Mirror',rotate:'Rotate 60°',
+    undo:'Undo',shortestMoves:'Moves left',hint:'Hint',remainingCheck:'Moves left ×{n}',mirror:'Mirror',rotate:'Rotate 60°',
     debugClear:'DEBUG: Clear',debugUnlock14:'DEBUG: Unlock 14',debugUnlock:'DEBUG: Unlock 15',
     debugExtra14:'DEBUG: Master 14',debugExtra29:'DEBUG: Master 29',debugExtra44:'DEBUG: Master 44',debugExtra59:'DEBUG: Master 59',
     boardLabel:'Seven-daruma puzzle board',tips:'Quick tip',makeBoard:'Board Maker',
@@ -811,7 +825,7 @@ const UI_TEXT={
     pageTitle:'叫醒不倒翁！— WAKE SEVEN',language:'选择语言',title:'叫醒不倒翁！',
     prev:'上一题',next:'下一题',progress:'15题进度',shortest:'至少还需',moveUnit:'步',moves:'步数',
     stageMode:'关卡模式',freeMode:'自由模式',shuffle:'打乱',reset:'重新开始',resetAll:'全部立起',
-    undo:'撤销一步',shortestMoves:'最少步数',hint:'提示',mirror:'左右翻转',rotate:'旋转60°',
+    undo:'撤销一步',shortestMoves:'最少步数',hint:'提示',remainingCheck:'剩余步数 ×{n}',mirror:'左右翻转',rotate:'旋转60°',
     debugClear:'DEBUG: 通过',debugUnlock14:'DEBUG: 解锁14题',debugUnlock:'DEBUG: 解锁15题',
     debugExtra14:'DEBUG: 名人14题',debugExtra29:'DEBUG: 名人29题',debugExtra44:'DEBUG: 名人44题',debugExtra59:'DEBUG: 名人59题',
     boardLabel:'七个不倒翁的谜题棋盘',tips:'攻略提示',makeBoard:'制作棋盘',
@@ -839,7 +853,7 @@ const UI_TEXT={
     pageTitle:'다루마를 깨워라! — WAKE SEVEN',language:'언어 선택',title:'다루마를 깨워라!',
     prev:'이전',next:'다음',progress:'15문제 진행 상황',shortest:'최소',moveUnit:'수 남음',moves:'수',
     stageMode:'문제 모드',freeMode:'자유 모드',shuffle:'섞기',reset:'다시 시작',resetAll:'모두 세우기',
-    undo:'한 수 되돌리기',shortestMoves:'최단 수',hint:'힌트',mirror:'좌우 반전',rotate:'60° 회전',
+    undo:'한 수 되돌리기',shortestMoves:'최단 수',hint:'힌트',remainingCheck:'남은 수 ×{n}',mirror:'좌우 반전',rotate:'60° 회전',
     debugClear:'DEBUG: 성공',debugUnlock14:'DEBUG: 14문제 해제',debugUnlock:'DEBUG: 15문제 해제',
     debugExtra14:'DEBUG: 명인 14',debugExtra29:'DEBUG: 명인 29',debugExtra44:'DEBUG: 명인 44',debugExtra59:'DEBUG: 명인 59',
     boardLabel:'일곱 다루마 퍼즐판',tips:'공략 팁',makeBoard:'보드 만들기',
@@ -865,7 +879,7 @@ const UI_TEXT={
   }
 };
 Object.assign(UI_TEXT.ja,{
-  menu:'メニュー',clearMessages:'クリア後のメッセージ',messageDialogTitle:'クリア後のメッセージ',twoMovePatterns:'最短2手の盤面を見る',twoMoveTitle:'最短2手の9パターン',twoMoveText:'基本3〜11で、すべて遊べます。',twoMoveDetailTitle:'この盤面のコツ',compareBoard:'盤面をスワイプすると、ゲーム中の盤面と比べられます',playInFree:'フリーモードで遊ぶ →',backToPatterns:'一覧へ',stageModeReturn:'ステージモードへ',tipGuideTitle:'攻略のコツ',playThisBoard:'この盤面で遊ぶ →',
+  menu:'メニュー',clearMessages:'クリア後のメッセージ',messageDialogTitle:'クリア後のメッセージ',optimalFailTitle:'最短ではありません',optimalFailText:'最短手数で、もう一度挑戦しよう。',twoMovePatterns:'最短2手の盤面を見る',twoMoveTitle:'最短2手の9パターン',twoMoveText:'基本3〜11で、すべて遊べます。',twoMoveDetailTitle:'この盤面のコツ',compareBoard:'盤面をスワイプすると、ゲーム中の盤面と比べられます',playInFree:'フリーモードで遊ぶ →',backToPatterns:'一覧へ',stageModeReturn:'ステージモードへ',tipGuideTitle:'攻略のコツ',playThisBoard:'この盤面で遊ぶ →',
   extraClear1:'名人への道では、三の巻の途中まで最短3手の問題が続きます。',
   extraClear3:'この7枚の配置のだるま起こしでは、最短4手以内に必ずクリアできる仕組みになっています。',
   extraClear7:'四の巻では残り最短手数が表示されません。最短2手の盤面を見分ける感覚を、今のうちに身につけておこう。',
@@ -887,7 +901,7 @@ Object.assign(UI_TEXT.ja,{
   twoMoveDiscovery:'最短2手の盤面　{n} / 9\nこの形と向きを、そのまま覚えておこう。',detailsLink:'詳しい解説はこちら →',backToClear:'戻る',guideCardSmall:'4体立ち：寝ダルマの小三角は最短1手',guideCardOuter:'5体立ち：寝た2体が外周で離れていれば最短3手',guideCardCenter:'6体寝て、中央だけ立っている形は最短4手',guideCardAlternate:'外周に1つおきに3体立っている形は最短3手'
 });
 Object.assign(UI_TEXT.en,{
-  menu:'Menu',clearMessages:'Clear messages',messageDialogTitle:'Clear messages',twoMovePatterns:'View 2-move boards',twoMoveTitle:'Nine 2-move patterns',twoMoveText:'All appear in Basic 3–11.',twoMoveDetailTitle:'Tip for this board',compareBoard:'Swipe a board to compare it with the game board.',playInFree:'Play in Free Mode →',backToPatterns:'Back to list',stageModeReturn:'Back to puzzles',tipGuideTitle:'Quick tips',playThisBoard:'Play this board →',
+  menu:'Menu',clearMessages:'Clear messages',messageDialogTitle:'Clear messages',optimalFailTitle:'Not the shortest path',optimalFailText:'Try again in the fewest moves.',twoMovePatterns:'View 2-move boards',twoMoveTitle:'Nine 2-move patterns',twoMoveText:'All appear in Basic 3–11.',twoMoveDetailTitle:'Tip for this board',compareBoard:'Swipe a board to compare it with the game board.',playInFree:'Play in Free Mode →',backToPatterns:'Back to list',stageModeReturn:'Back to puzzles',tipGuideTitle:'Quick tips',playThisBoard:'Play this board →',
   extraClear1:'Path to Mastery continues with three-move puzzles through the middle of Volume 3.',
   extraClear3:'Every arrangement of these seven daruma can be solved in four moves or fewer.',
   extraClear7:'Volume 4 does not show moves left. Start building an eye for two-move boards now.',
@@ -909,7 +923,7 @@ Object.assign(UI_TEXT.en,{
   twoMoveDiscovery:'Two-move board {n} / 9\nRemember this exact shape and orientation.',detailsLink:'See the full explanation →',backToClear:'Back',guideCardSmall:'Four standing: the small triangle of fallen daruma takes one move.',guideCardOuter:'Five standing: two fallen daruma separated on the outer ring take three moves.',guideCardCenter:'Six fallen, with only the center standing: four moves.',guideCardAlternate:'Three standing at every other outer position: three moves.'
 });
 Object.assign(UI_TEXT.zh,{
-  menu:'菜单',clearMessages:'通关后消息',messageDialogTitle:'通关后消息',twoMovePatterns:'查看最少2步棋盘',twoMoveTitle:'9种最少2步图案',twoMoveText:'基础第3～11题涵盖全部图案。',twoMoveDetailTitle:'这个棋盘的提示',compareBoard:'滑动棋盘，可与游戏中的棋盘进行比较。',playInFree:'在自由模式中玩 →',backToPatterns:'返回列表',stageModeReturn:'返回关卡模式',tipGuideTitle:'攻略提示',playThisBoard:'玩这个棋盘 →',
+  menu:'菜单',clearMessages:'通关后消息',messageDialogTitle:'通关后消息',optimalFailTitle:'不是最短解法',optimalFailText:'请用最少步数再试一次。',twoMovePatterns:'查看最少2步棋盘',twoMoveTitle:'9种最少2步图案',twoMoveText:'基础第3～11题涵盖全部图案。',twoMoveDetailTitle:'这个棋盘的提示',compareBoard:'滑动棋盘，可与游戏中的棋盘进行比较。',playInFree:'在自由模式中玩 →',backToPatterns:'返回列表',stageModeReturn:'返回关卡模式',tipGuideTitle:'攻略提示',playThisBoard:'玩这个棋盘 →',
   extraClear1:'名人之路会持续出现最少3步的题目，直到第三卷中途。',
   extraClear3:'这七个不倒翁的任何布局，都一定能在最少4步以内完成。',
   extraClear7:'第四卷不会显示剩余最少步数。现在就开始培养识别最少2步棋盘的感觉吧。',
@@ -931,7 +945,7 @@ Object.assign(UI_TEXT.zh,{
   twoMoveDiscovery:'最少2步棋盘 {n} / 9\n记住这个形状和朝向。',detailsLink:'查看详细说明 →',backToClear:'返回',guideCardSmall:'4个站立：倒下小三角形最少1步。',guideCardOuter:'5个站立：两只倒下的不倒翁在外圈分开时最少3步。',guideCardCenter:'6个倒下、只有中央站立时最少4步。',guideCardAlternate:'外圈每隔一个站立3个时最少3步。'
 });
 Object.assign(UI_TEXT.ko,{
-  menu:'메뉴',clearMessages:'클리어 메시지',messageDialogTitle:'클리어 메시지',twoMovePatterns:'최단 2수 보드 보기',twoMoveTitle:'최단 2수 9가지 패턴',twoMoveText:'기본 3~11번에서 모두 플레이할 수 있어요.',twoMoveDetailTitle:'이 보드의 팁',compareBoard:'보드를 스와이프하면 게임 보드와 비교할 수 있어요.',playInFree:'자유 모드에서 하기 →',backToPatterns:'목록으로',stageModeReturn:'문제 모드로',tipGuideTitle:'공략 팁',playThisBoard:'이 보드로 하기 →',
+  menu:'메뉴',clearMessages:'클리어 메시지',messageDialogTitle:'클리어 메시지',optimalFailTitle:'최단 경로가 아니에요',optimalFailText:'최단 수로 다시 도전해 보세요.',twoMovePatterns:'최단 2수 보드 보기',twoMoveTitle:'최단 2수 9가지 패턴',twoMoveText:'기본 3~11번에서 모두 플레이할 수 있어요.',twoMoveDetailTitle:'이 보드의 팁',compareBoard:'보드를 스와이프하면 게임 보드와 비교할 수 있어요.',playInFree:'자유 모드에서 하기 →',backToPatterns:'목록으로',stageModeReturn:'문제 모드로',tipGuideTitle:'공략 팁',playThisBoard:'이 보드로 하기 →',
   extraClear1:'명인의 길에서는 3권 중간까지 최단 3수 문제가 이어집니다.',
   extraClear3:'이 7개 다루마의 모든 배치는 반드시 최단 4수 이내에 풀 수 있도록 되어 있어요.',
   extraClear7:'4권에서는 남은 최단 수가 표시되지 않습니다. 지금부터 최단 2수 보드를 알아보는 감각을 길러 보세요.',
@@ -1031,13 +1045,23 @@ function updateMasterTheme(){document.body.classList.toggle('mastered',isMastere
 const mod3=v=>((v%3)+3)%3;
 const isSolved=()=>SOLVER.dist[enc(ori)]===0;
 let displayedMoves=null,displayedRemaining=null;
-let fourthHintPreview=false,fourthDistanceRevealed=false,fourthHintDistance=null;
+let fourthHintPreview=false,fourthDistanceRevealed=false,fourthHintDistance=null,fourthChecksUsed=0;
+const masterVolume=()=>extraMode?Math.floor(extraIndex/STAGES.length)+1:0;
+const requiresOptimalClear=()=>extraMode;
+const masterHintsDisabled=()=>masterVolume()>=2;
+const isThirdVolume=()=>extraMode&&extraIndex>=30&&extraIndex<45;
 const isFourthVolume=()=>extraMode&&extraIndex>=45&&extraIndex<60;
+const fourthCheckLimit=()=>!isFourthVolume()?0:(extraIndex%STAGES.length<7?2:extraIndex%STAGES.length<12?1:0);
+const fourthChecksLeft=()=>Math.max(0,fourthCheckLimit()-fourthChecksUsed);
 const usesHiddenRemaining=()=>freeMode||isFourthVolume();
-function resetFourthDistance(){
+function resetFourthDistance(resetChecks=false){
   fourthHintPreview=false;fourthDistanceRevealed=false;fourthHintDistance=null;
+  if(resetChecks)fourthChecksUsed=0;
+  if(isFourthVolume())renderStageNav();
 }
 function remainingForDisplay(actual){
+  if(isFourthVolume())return fourthDistanceRevealed?actual:'?';
+  if(isThirdVolume()&&drag)return '?';
   if(!usesHiddenRemaining())return actual;
   if(fourthHintPreview&&fourthHintDistance!==null)return fourthHintDistance;
   return fourthDistanceRevealed?actual:'?';
@@ -1177,6 +1201,13 @@ function paint(){
   if(!editingBoard)showRemaining(remainingForDisplay(SOLVER.dist[enc(ori)]));
   if(!editingBoard&&isSolved()&&!clearShown){
     clearShown=true;
+    if(requiresOptimalClear()&&moves!==best){
+      $('optimalFailTitle').textContent=tr('optimalFailTitle');
+      $('optimalFailText').textContent=tr('optimalFailText');
+      $('optimalRetry').textContent=tr('reset');
+      $('optimalFailDialog').hidden=false;
+      return;
+    }
     if(extraMode){
       clearedExtraStages.add(extraIndex);
       try{localStorage.setItem('wake7-extra-cleared',JSON.stringify([...clearedExtraStages]));}catch(_){}
@@ -1294,7 +1325,7 @@ function applySwipe(ti,dir,save=true){
   moves++;
 }
 function setPosition(state,par){
-  resetFourthDistance();
+  resetFourthDistance(true);
   cancelTutorialHint();
   cancelTileAnimations();
   clearHintVisuals();
@@ -1353,6 +1384,13 @@ function startFree(){
   let state=pool[(Math.random()*pool.length)|0];
   if(pool.length>1)while(state===currentInitialState)state=pool[(Math.random()*pool.length)|0];
   setPosition(state,SOLVER.dist[state]);
+  renderStageNav();
+}
+function revealFourthDistance(){
+  if(!isFourthVolume()||busy||fourthChecksLeft()<=0)return;
+  fourthChecksUsed++;
+  fourthHintPreview=false;fourthHintDistance=null;fourthDistanceRevealed=true;
+  showRemaining(SOLVER.dist[enc(ori)]);
   renderStageNav();
 }
 function startFreeFromState(state){
@@ -1673,7 +1711,7 @@ function showHintArrow(ti,dir,both=false,persistent=false){
   }},1400);
 }
 function showBestMoveHint(persistent=false){
-  if(busy||isSolved()) return;
+  if(busy||isSolved()||masterHintsDisabled()) return;
   const dist=SOLVER.dist, d=dist[enc(ori)];
   if(usesHiddenRemaining()){
     fourthHintPreview=true;fourthDistanceRevealed=false;fourthHintDistance=Math.max(0,d-1);
@@ -1703,7 +1741,8 @@ function scheduleStageOneTutorial(){
 }
 $('hint').addEventListener('click',()=>{
   cancelTutorialHint();
-  showBestMoveHint();
+  if(isFourthVolume())revealFourthDistance();
+  else showBestMoveHint();
 });
 
 let pickerRound=-1;
@@ -1830,6 +1869,13 @@ function renderStageNav(){
   $('shuffle').hidden=true;
   $('undo').hidden=editingBoard;
   $('hint').hidden=editingBoard;
+  if(isFourthVolume()){
+    $('hint').textContent=tr('remainingCheck',{n:fourthChecksLeft()});
+    $('hint').disabled=fourthChecksLeft()<=0||fourthDistanceRevealed;
+  }else{
+    $('hint').textContent=tr('hint');
+    $('hint').disabled=masterHintsDisabled();
+  }
   $('debugTools').hidden=!DEBUG_MODE;
   $('debugClear').hidden=!DEBUG_MODE||editingBoard;
   $('debugUnlock14').hidden=!DEBUG_MODE||editingBoard||freeMode||extraMode||allPrimaryCleared();
@@ -1871,7 +1917,7 @@ function renderStageNav(){
     else showRemaining(d,false);
   }else if(extraMode){
     const volume=Math.floor(extraIndex/STAGES.length)+1;
-    $('stageKind').textContent=currentLang==='ja'?'名人の道':tr('allPatternsKind');
+    $('stageKind').textContent=currentLang==='ja'?'名人への道':tr('allPatternsKind');
     $('stageNumber').textContent=volumeLabel(volume);
     $('stageCount').textContent=(extraIndex%STAGES.length+1)+' / '+STAGES.length;
     $('stageCount').hidden=false;
@@ -2091,7 +2137,7 @@ function buildMessageReviewEntries(){
 function messageReviewPlace(entry){
   if(!entry.extra)return currentLang==='ja'?'問題 '+(entry.index+1):tr('stageAria',{n:entry.index+1,par:STAGES[entry.index].par});
   const volume=Math.floor(entry.index/STAGES.length)+1;
-  return currentLang==='ja'?'名人の道 '+volumeLabel(volume)+'・第'+(entry.index%STAGES.length+1)+'問':tr('extraStageAria',{n:entry.index+1,total:EXTRA_STAGES.length});
+  return currentLang==='ja'?'名人への道 '+volumeLabel(volume)+'・第'+(entry.index%STAGES.length+1)+'問':tr('extraStageAria',{n:entry.index+1,total:EXTRA_STAGES.length});
 }
 function renderMessageReview(){
   const entry=messageReviewEntries[messageReviewIndex];if(!entry)return;
@@ -2124,6 +2170,7 @@ function volumeLabel(n){
 function hideGameDialogs(){
   $('clearDialog').hidden=true;
   $('messageDialog').hidden=true;
+  $('optimalFailDialog').hidden=true;
   $('clearQuiz').hidden=true;
   $('masterDialog').hidden=true;
   $('twoMoveDialog').hidden=true;
@@ -2429,6 +2476,11 @@ $('clearClose').addEventListener('click',()=>{
   hideGameDialogs();
   renderStageNav();
 });
+$('optimalRetry').addEventListener('click',()=>{
+  $('optimalFailDialog').hidden=true;
+  setPosition(currentInitialState,currentInitialPar);
+  renderStageNav();
+});
 $('clearMessages').addEventListener('click',openMessageReview);
 $('closeMessages').addEventListener('click',()=>{$('messageDialog').hidden=true;});
 $('messagePrev').addEventListener('click',()=>{if(messageReviewIndex>0){messageReviewIndex--;renderMessageReview();}});
@@ -2729,6 +2781,11 @@ function applyLanguage(lang){
   if(!$('twoMoveDialog').hidden)renderTwoMovePatterns();
   if(!$('twoMoveDetailDialog').hidden)renderTwoMoveDetail();
   if(!$('messageDialog').hidden)renderMessageReview();
+  if(!$('optimalFailDialog').hidden){
+    $('optimalFailTitle').textContent=tr('optimalFailTitle');
+    $('optimalFailText').textContent=tr('optimalFailText');
+    $('optimalRetry').textContent=tr('reset');
+  }
   if(editingBoard)showMakerMessage();
   else if(clearShown){
     $('clearDialogMessage').textContent=tr('clear');
